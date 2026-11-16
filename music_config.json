@@ -1,5 +1,17 @@
 [
   {
+    "title": "Разговор",
+    "artist": "Павел Пламенев",
+    "audio": "sounds/music__Павел_Пламенев__Разговор.mp3",
+    "bg": "sounds/background__Павел_Пламенев__Разговор.mp4",
+    "icon": "sounds/icon__Павел_Пламенев__Разговор.png",
+    "round_icon": 30,
+    "sound_multiplier": 0.8,
+    "subtitles": {
+
+    }
+  },
+  {
     "title": "Хомо Саспенс",
     "artist": "DEEP-EX-SENSE",
     "audio": "sounds/music__DEEP-EX-SENSE__Хомо_Саспенс.mp3",

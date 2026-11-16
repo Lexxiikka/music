@@ -130,8 +130,32 @@
             pointer-events: none;
         }
 
+        #selector-bg {
+            position: absolute;
+            inset: 0;
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        #selector-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        #track-selector-screen.has-idle-bg #selector-bg {
+            opacity: 1;
+        }
+
         #track-carousel-viewport {
             position: relative;
+            z-index: 1;
             width: 100%;
             height: 100%;
             display: flex;
@@ -1141,6 +1165,7 @@
     </div>
 
     <div id="track-selector-screen" class="selector-hidden">
+        <div id="selector-bg" aria-hidden="true"></div>
         <div id="track-carousel-viewport">
             <div id="track-carousel-rail"></div>
         </div>
@@ -1224,7 +1249,7 @@
                         <button id="play-pause-btn" title="Пауза" aria-label="Пауза / Воспроизведение">
                             <svg id="icon-pause" viewBox="0 0 56 56" fill="none">
                                 <defs>
-                                    <linearGradient id="pause-btn-grad" gradientUnits="userSpaceOnUse" x1="28" y1="3"
+                                    <linearGradient id="pause-btn-grad" gradientUnits="objectBoundingBox" x1="28" y1="3"
                                         x2="28" y2="53">
                                         <stop offset="0%" stop-color="#da91e6" />
                                         <stop offset="50%" stop-color="#6764f0" />
@@ -1469,7 +1494,7 @@
                 showError('Не удалось загрузить библиотеку анимаций (GSAP). Обновите страницу.');
             }
             const startText = document.getElementById('start-text');
-            const uiImages = ['assets/icon.png'];
+            const uiImages = ['assets/icon.png', 'assets/background.png'];
             const trackIcons = [...new Set(musicList.map(t => t.icon).filter(Boolean))];
 
             const jobs = [
@@ -1497,6 +1522,7 @@
             const startScreen = document.getElementById('start-screen');
             const startText = document.getElementById('start-text');
             const trackSelectorScreen = document.getElementById('track-selector-screen');
+            const selectorBg = document.getElementById('selector-bg');
             const trackCarouselViewport = document.getElementById('track-carousel-viewport');
             const trackCarouselRail = document.getElementById('track-carousel-rail');
             const musicPlayerPanel = document.getElementById('music-player-panel');
@@ -1784,6 +1810,11 @@
             let loadToken = 0;
             let loadingTrack = false;
             let isUserSeeking = false;
+
+            function updateSelectorBackgroundState() {
+                const showIdleBg = !hasPlayedAnyTrack || !isPlaying || activeAudio.paused;
+                trackSelectorScreen.classList.toggle('has-idle-bg', showIdleBg);
+            }
 
             function formatTrackTime(seconds) {
                 if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
@@ -2082,6 +2113,7 @@
                 if (!musicList.length) return;
                 selectorOpen = true;
                 activeSelectorIndex = Math.max(0, Math.min(musicList.length - 1, focusIndex));
+                updateSelectorBackgroundState();
                 trackSelectorScreen.classList.remove('selector-hidden');
                 musicPlayerPanel.classList.add('hidden');
                 requestAnimationFrame(() => updateCarouselPosition(false));
@@ -2133,6 +2165,7 @@
                         isPlaying = true;
                         setPlayPauseIcon(false);
                         setPauseState(false);
+                        updateSelectorBackgroundState();
                         startSubsChecker();
                     }
                     return;
@@ -2389,6 +2422,7 @@
                 nextAudio = oldAudio;
 
                 setPlayPauseIcon(false);
+                updateSelectorBackgroundState();
 
                 startSubsChecker();
 
@@ -2416,12 +2450,14 @@
                     isPlaying = true;
                     setPlayPauseIcon(false);
                     setPauseState(false);
+                    updateSelectorBackgroundState();
                     startSubsChecker();
                 } else {
                     activeAudio.pause();
                     isPlaying = false;
                     setPlayPauseIcon(true);
                     setPauseState(true);
+                    updateSelectorBackgroundState();
                     stopSubsChecker();
                 }
             }
@@ -2447,6 +2483,7 @@
                         isPlaying = false;
                         setPlayPauseIcon(true);
                         setPauseState(true);
+                        updateSelectorBackgroundState();
                         stopSubsChecker();
                     }
 
@@ -2703,6 +2740,7 @@
             });
 
             await preloadInitialAssets();
+            selectorBg.style.backgroundImage = `url("${cached('assets/background.png')}")`;
             buildTrackCarousel();
         });
     </script>
