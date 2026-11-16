@@ -1,1 +1,1 @@
-# Музыкальный плеер - [Lexxikka](https://lexxiikka.github.io/)
+# Музыкальный плеер - [Lexxikka](https://lexxiikka.github.io/music)
