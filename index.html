@@ -38,16 +38,50 @@
             height: 100%;
             z-index: 1;
             pointer-events: none;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #bg-strip {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            will-change: transform;
         }
 
         .bg-video {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 50%;
             height: 100%;
             object-fit: cover;
-            transition: opacity 1.2s ease-in-out;
+        }
+
+        #bg-video-2 {
+            left: 50%;
+        }
+
+        #bg-seam {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: clamp(220px, 24vw, 420px);
+            height: 100%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg,
+                    rgba(0, 0, 0, 0) 0%,
+                    rgba(0, 0, 0, 0.35) 18%,
+                    rgba(0, 0, 0, 0.78) 36%,
+                    #000 50%,
+                    rgba(0, 0, 0, 0.78) 64%,
+                    rgba(0, 0, 0, 0.35) 82%,
+                    rgba(0, 0, 0, 0) 100%);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 3;
         }
 
         .hidden {
@@ -75,7 +109,6 @@
             text-align: center;
         }
 
-        /* Экран выбора треков (карусель) */
         #track-selector-screen {
             position: fixed;
             inset: 0;
@@ -139,7 +172,6 @@
             opacity: 1;
         }
 
-        /* Блок прогресса загрузки НАД иконкой */
         .track-load-box {
             width: 200px;
             min-height: 36px;
@@ -183,7 +215,6 @@
             transition: width 0.15s linear;
         }
 
-        /* Иконка трека */
         .track-icon-frame {
             position: relative;
             width: 210px;
@@ -232,7 +263,6 @@
             filter: drop-shadow(0 0 12px rgba(124, 0, 255, 0.9));
         }
 
-        /* Название и исполнитель ПОД иконкой */
         .track-card-meta {
             width: 100%;
             text-align: center;
@@ -280,6 +310,149 @@
             gap: 14px;
             z-index: 25;
             box-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
+        }
+
+        #player-load-bar {
+            position: absolute;
+            inset: -1px;
+            border-radius: 15px;
+            overflow: hidden;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 2;
+        }
+
+        #player-load-bar.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #player-load-fill {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #6764f0, #a61fd3, #da91e6);
+            box-shadow: 0 0 12px rgba(166, 31, 211, 0.95);
+            transform-origin: left center;
+            transform: scaleX(0);
+            transition: transform 0.25s linear;
+            will-change: transform;
+        }
+
+        #player-load-bar.indeterminate #player-load-fill {
+            width: 35%;
+            transform: none;
+            transition: none;
+            animation: playerLoadSweep 1.1s ease-in-out infinite;
+        }
+
+        @keyframes playerLoadSweep {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(290%);
+            }
+        }
+
+        #player-load-label {
+            position: absolute;
+            left: 0;
+            bottom: calc(100% + 10px);
+            max-width: 100%;
+            padding: 6px 14px;
+            font-size: 12.5px;
+            letter-spacing: 0.2px;
+            color: rgba(255, 255, 255, 0.92);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(124, 0, 255, 0.65);
+            border-radius: 999px;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(6px);
+            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+        }
+
+        #player-load-label.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .nav-btn-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-tooltip {
+            position: absolute;
+            bottom: calc(100% + 14px);
+            left: 50%;
+            transform: translateX(-50%) translateY(6px);
+            background: rgba(10, 6, 18, 0.92);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(159, 70, 167, 0.75);
+            border-radius: 10px;
+            padding: 8px 13px;
+            min-width: 140px;
+            max-width: 240px;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7), 0 0 14px rgba(124, 0, 255, 0.35);
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+            z-index: 40;
+        }
+
+        .nav-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: rgba(159, 70, 167, 0.75) transparent transparent transparent;
+        }
+
+        .nav-btn-wrap:hover .nav-tooltip,
+        .nav-btn-wrap:has(button:focus-visible) .nav-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .nav-tooltip-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.3;
+        }
+
+        .nav-tooltip-artist {
+            font-size: 11.5px;
+            color: rgba(218, 145, 230, 0.85);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+            line-height: 1.25;
         }
 
         .player-top {
@@ -374,7 +547,6 @@
             box-shadow: 0 0 6px rgba(166, 31, 211, 0.9);
         }
 
-        /* Уведомление справа внизу о загрузке следующего трека */
         #preload-toast {
             position: fixed;
             bottom: 40px;
@@ -433,6 +605,7 @@
 
         .track-info {
             text-align: left;
+            will-change: transform, opacity;
         }
 
         #track-title {
@@ -979,9 +1152,11 @@
 
     <div class="container">
         <div id="bg-container">
-            <video id="bg-video-1" class="bg-video" autoplay muted loop playsinline preload="auto"></video>
-            <video id="bg-video-2" class="bg-video" autoplay muted loop playsinline preload="auto"
-                style="opacity: 0;"></video>
+            <div id="bg-strip">
+                <video id="bg-video-1" class="bg-video" autoplay muted loop playsinline preload="auto"></video>
+                <video id="bg-video-2" class="bg-video" autoplay muted loop playsinline preload="auto"></video>
+                <div id="bg-seam"></div>
+            </div>
         </div>
 
         <svg class="player-svg-defs" aria-hidden="true">
@@ -993,80 +1168,87 @@
             </defs>
         </svg>
 
-        <div class="container">
-            <div id="bg-container">
-                <video id="bg-video-1" class="bg-video" autoplay muted loop playsinline preload="auto"></video>
-                <video id="bg-video-2" class="bg-video" autoplay muted loop playsinline preload="auto"
-                    style="opacity: 0;"></video>
+        <div id="music-player-panel" class="hidden">
+            <div id="player-load-label" role="status" aria-live="polite"></div>
+            <div id="player-load-bar" aria-hidden="true">
+                <div id="player-load-fill"></div>
             </div>
 
-            <div id="music-player-panel" class="hidden">
-                <div class="player-top">
-                    <div class="player-left">
-                        <div class="track-info">
-                            <div id="track-title">Выберите трек</div>
-                            <div id="track-artist">—</div>
-                        </div>
-                        <div class="player-volume">
-                            <svg class="volume-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path d="M3 9.5V14.5H7L12 19V5L7 9.5H3Z" fill="url(#player-icon-grad)" />
-                                <path d="M15.5 8.5C16.8 9.8 16.8 14.2 15.5 15.5" stroke="url(#player-icon-grad)"
-                                    stroke-width="2.2" stroke-linecap="round" />
-                                <path d="M18.5 5.5C21.2 8.2 21.2 15.8 18.5 18.5" stroke="url(#player-icon-grad)"
-                                    stroke-width="2.2" stroke-linecap="round" />
-                            </svg>
-                            <input type="range" id="player-volume-slider" min="0" max="1" step="0.01" value="0.3"
-                                aria-label="Громкость">
-                        </div>
+            <div class="player-top">
+                <div class="player-left">
+                    <div class="track-info">
+                        <div id="track-title">Выберите трек</div>
+                        <div id="track-artist">—</div>
                     </div>
-                    <div class="player-right">
-                        <div class="player-controls">
-                            <button id="menu-btn" title="Выбрать другой трек" aria-label="Выбрать другой трек">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="url(#player-icon-grad)" stroke-width="2.2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="3" width="7" height="7" rx="1.6"></rect>
-                                    <rect x="14" y="3" width="7" height="7" rx="1.6"></rect>
-                                    <rect x="3" y="14" width="7" height="7" rx="1.6"></rect>
-                                    <rect x="14" y="14" width="7" height="7" rx="1.6"></rect>
-                                </svg>
-                            </button>
-                            <button id="prev-btn" title="Предыдущий трек" aria-label="Предыдущий трек">
+                    <div class="player-volume">
+                        <svg class="volume-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M3 9.5V14.5H7L12 19V5L7 9.5H3Z" fill="url(#player-icon-grad)" />
+                            <path d="M15.5 8.5C16.8 9.8 16.8 14.2 15.5 15.5" stroke="url(#player-icon-grad)"
+                                stroke-width="2.2" stroke-linecap="round" />
+                            <path d="M18.5 5.5C21.2 8.2 21.2 15.8 18.5 18.5" stroke="url(#player-icon-grad)"
+                                stroke-width="2.2" stroke-linecap="round" />
+                        </svg>
+                        <input type="range" id="player-volume-slider" min="0" max="1" step="0.01" value="0.3"
+                            aria-label="Громкость">
+                    </div>
+                </div>
+                <div class="player-right">
+                    <div class="player-controls">
+                        <button id="menu-btn" title="Выбрать другой трек" aria-label="Выбрать другой трек">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="url(#player-icon-grad)" stroke-width="2.2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7" rx="1.6"></rect>
+                                <rect x="14" y="3" width="7" height="7" rx="1.6"></rect>
+                                <rect x="3" y="14" width="7" height="7" rx="1.6"></rect>
+                                <rect x="14" y="14" width="7" height="7" rx="1.6"></rect>
+                            </svg>
+                        </button>
+
+                        <div class="nav-btn-wrap">
+                            <div class="nav-tooltip" id="prev-tooltip">
+                                <div class="nav-tooltip-title" id="prev-tooltip-title">—</div>
+                                <div class="nav-tooltip-artist" id="prev-tooltip-artist">—</div>
+                            </div>
+                            <button id="prev-btn" aria-label="Предыдущий трек">
                                 <svg viewBox="0 0 28 24" fill="none">
                                     <path d="M15 4L6 12L15 20H10.5L1.5 12L10.5 4H15Z" fill="url(#player-icon-grad)" />
                                     <path d="M23.5 4L14.5 12L23.5 20H19L10 12L19 4H23.5Z" fill="url(#player-icon-grad)"
                                         opacity="0.72" />
                                 </svg>
                             </button>
-                            <button id="play-pause-btn" title="Пауза" aria-label="Пауза / Воспроизведение">
-                                <svg id="icon-pause" viewBox="0 0 56 56" fill="none">
-                                    <defs>
-                                        <mask id="pause-cutout">
-                                            <rect width="56" height="56" fill="white" />
-                                            <rect x="20" y="18" width="5.5" height="20" rx="2.75" fill="black" />
-                                            <rect x="30.5" y="18" width="5.5" height="20" rx="2.75" fill="black" />
-                                        </mask>
-                                    </defs>
-                                    <circle cx="28" cy="28" r="25" fill="url(#player-icon-grad)"
-                                        mask="url(#pause-cutout)" />
-                                </svg>
-                                <svg id="icon-play" class="hidden" viewBox="0 0 56 56" fill="none">
-                                    <defs>
-                                        <mask id="play-cutout">
-                                            <rect width="56" height="56" fill="white" />
-                                            <path
-                                                d="M23 18.5C23 17.3 24.3 16.6 25.3 17.2L38.2 25.7C39.1 26.3 39.1 27.7 38.2 28.3L25.3 36.8C24.3 37.4 23 36.7 23 35.5V18.5Z"
-                                                fill="black" />
-                                        </mask>
-                                    </defs>
-                                    <circle cx="28" cy="28" r="25" fill="url(#player-icon-grad)"
-                                        mask="url(#play-cutout)" />
-                                </svg>
-                                <svg id="load-ring" class="load-ring" viewBox="0 0 70 70" aria-hidden="true">
-                                    <circle class="ring-bg" cx="35" cy="35" r="31"></circle>
-                                    <circle class="ring-fg" cx="35" cy="35" r="31"></circle>
-                                </svg>
-                            </button>
-                            <button id="next-btn" title="Следующий трек" aria-label="Следующий трек">
+                        </div>
+
+                        <button id="play-pause-btn" title="Пауза" aria-label="Пауза / Воспроизведение">
+                            <svg id="icon-pause" viewBox="0 0 56 56" fill="none">
+                                <defs>
+                                    <mask id="pause-cutout">
+                                        <rect width="56" height="56" fill="white" />
+                                        <rect x="20" y="18" width="5.5" height="20" rx="2.75" fill="black" />
+                                        <rect x="30.5" y="18" width="5.5" height="20" rx="2.75" fill="black" />
+                                    </mask>
+                                </defs>
+                                <circle cx="28" cy="28" r="25" fill="url(#player-icon-grad)"
+                                    mask="url(#pause-cutout)" />
+                            </svg>
+                            <svg id="icon-play" class="hidden" viewBox="0 0 56 56" fill="none">
+                                <defs>
+                                    <mask id="play-cutout">
+                                        <rect width="56" height="56" fill="white" />
+                                        <path
+                                            d="M23 18.5C23 17.3 24.3 16.6 25.3 17.2L38.2 25.7C39.1 26.3 39.1 27.7 38.2 28.3L25.3 36.8C24.3 37.4 23 36.7 23 35.5V18.5Z"
+                                            fill="black" />
+                                    </mask>
+                                </defs>
+                                <circle cx="28" cy="28" r="25" fill="url(#player-icon-grad)" mask="url(#play-cutout)" />
+                            </svg>
+                        </button>
+
+                        <div class="nav-btn-wrap">
+                            <div class="nav-tooltip" id="next-tooltip">
+                                <div class="nav-tooltip-title" id="next-tooltip-title">—</div>
+                                <div class="nav-tooltip-artist" id="next-tooltip-artist">—</div>
+                            </div>
+                            <button id="next-btn" aria-label="Следующий трек">
                                 <svg viewBox="0 0 28 24" fill="none">
                                     <path d="M13 4L22 12L13 20H17.5L26.5 12L17.5 4H13Z" fill="url(#player-icon-grad)" />
                                     <path d="M4.5 4L13.5 12L4.5 20H9L18 12L9 4H4.5Z" fill="url(#player-icon-grad)"
@@ -1076,13 +1258,13 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="player-progress">
-                    <span id="current-time">0:00</span>
-                    <input type="range" id="track-seek-slider" min="0" max="100" step="0.1" value="0"
-                        aria-label="Перемотка трека">
-                    <span id="total-duration">0:00</span>
-                </div>
+            <div class="player-progress">
+                <span id="current-time">0:00</span>
+                <input type="range" id="track-seek-slider" min="0" max="100" step="0.1" value="0"
+                    aria-label="Перемотка трека">
+                <span id="total-duration">0:00</span>
             </div>
         </div>
     </div>
@@ -1176,7 +1358,8 @@
         async function fetchToBlobUrl(src, onProgress = () => { }) {
             const res = await fetch(src);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const total = +res.headers.get('Content-Length') || 0;
+            const encoded = res.headers.get('Content-Encoding');
+            const total = encoded && encoded !== 'identity' ? 0 : (+res.headers.get('Content-Length') || 0);
             const reader = res.body.getReader();
             const chunks = [];
             let loaded = 0;
@@ -1185,28 +1368,57 @@
                 if (done) break;
                 chunks.push(value);
                 loaded += value.length;
-                if (total) onProgress(Math.min(loaded / total, 0.99));
+                onProgress(total ? Math.min(loaded / total, 0.99) : 0, loaded, total);
             }
             const ext = src.split('.').pop().toLowerCase();
             const blob = new Blob(chunks, { type: MIME[ext] || res.headers.get('Content-Type') || '' });
             const url = URL.createObjectURL(blob);
             assetCache.set(src, url);
+            onProgress(1, loaded, loaded);
             return url;
         }
 
         const inflight = new Map();
         function loadAsset(src, onProgress = () => { }) {
-            if (assetCache.has(src)) { onProgress(1); return Promise.resolve(assetCache.get(src)); }
+            if (assetCache.has(src)) { onProgress(1, 0, 0); return Promise.resolve(assetCache.get(src)); }
             let job = inflight.get(src);
             if (!job) {
-                job = { listeners: new Set(), last: 0 };
-                job.promise = fetchToBlobUrl(src, (p) => { job.last = p; job.listeners.forEach(f => f(p)); })
+                job = { listeners: new Set(), last: [0, 0, 0] };
+                job.promise = fetchToBlobUrl(src, (...args) => { job.last = args; job.listeners.forEach(f => f(...args)); })
                     .finally(() => inflight.delete(src));
                 inflight.set(src, job);
             }
             job.listeners.add(onProgress);
-            onProgress(job.last);
+            onProgress(...job.last);
             return job.promise;
+        }
+
+        function loadAssetsWithProgress(srcs, onProgress = () => { }) {
+            const state = srcs.map(() => ({ loaded: 0, total: 0, done: false }));
+            const report = () => {
+                let loaded = 0, total = 0, known = true;
+                state.forEach(s => {
+                    if (s.done) { loaded += s.loaded; total += s.loaded; return; }
+                    if (!s.total) known = false;
+                    loaded += s.loaded;
+                    total += s.total;
+                });
+                const ratio = known && total > 0 ? Math.min(1, loaded / total) : 0;
+                onProgress({ ratio, loaded, total, known: known && total > 0 });
+            };
+            report();
+            return Promise.all(srcs.map((src, i) =>
+                loadAsset(src, (p, loaded, total) => {
+                    state[i].loaded = loaded;
+                    state[i].total = total;
+                    if (p >= 1) state[i].done = true;
+                    report();
+                }).catch(err => {
+                    state[i].done = true;
+                    reportAsset(src, err.message);
+                    report();
+                })
+            ));
         }
 
         function decodeImage(src) {
@@ -1291,10 +1503,27 @@
             const playPauseBtn = document.getElementById('play-pause-btn');
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
+            const prevTooltipTitle = document.getElementById('prev-tooltip-title');
+            const prevTooltipArtist = document.getElementById('prev-tooltip-artist');
+            const nextTooltipTitle = document.getElementById('next-tooltip-title');
+            const nextTooltipArtist = document.getElementById('next-tooltip-artist');
             const playerVolumeSlider = document.getElementById('player-volume-slider');
             const trackSeekSlider = document.getElementById('track-seek-slider');
             const currentTimeEl = document.getElementById('current-time');
             const totalDurationEl = document.getElementById('total-duration');
+
+            function updateNavTooltips(baseIndex = currentTrackIndex) {
+                const len = musicList.length;
+                if (!len) return;
+                const prevTrack = musicList[(baseIndex - 1 + len) % len];
+                const nextTrack = musicList[(baseIndex + 1) % len];
+
+                prevTooltipTitle.textContent = prevTrack.title || 'Без названия';
+                prevTooltipArtist.textContent = prevTrack.artist || '';
+                nextTooltipTitle.textContent = nextTrack.title || 'Без названия';
+                nextTooltipArtist.textContent = nextTrack.artist || '';
+            }
+            updateNavTooltips(0);
 
             function setPlayPauseIcon(paused) {
                 if (paused) {
@@ -1314,22 +1543,46 @@
             }
             syncVolumeSliderFill(playerVolumeSlider.value);
 
+            const bgStrip = document.getElementById('bg-strip');
             const bg1 = document.getElementById('bg-video-1');
             const bg2 = document.getElementById('bg-video-2');
+            const bgSeam = document.getElementById('bg-seam');
+            const BG_SLIDE_DURATION = 1.05;
             let activeBg = bg1;
             let nextBg = bg2;
             let currentBgSrc = null;
-            let bgTransitionTimer = null;
-            let bgTransitionId = 0;
+            let bgTimeline = null;
+            let bgFinishFn = null;
+            let pendingBgCancel = null;
+
+            [bg1, bg2].forEach(v => {
+                v.muted = true;
+                v.loop = true;
+                v.playsInline = true;
+            });
+            bg1.style.left = '0%';
+            bg2.style.left = '50%';
+            gsap.set(bgStrip, { xPercent: 0 });
+            gsap.set(bgSeam, { opacity: 0 });
 
             let isPlaying = false;
             let panelPausedVisual = false;
 
+            function setBgPlayback(play) {
+                [bg1, bg2].forEach(v => {
+                    if (!v.getAttribute('src')) return;
+                    if (play) {
+                        v.muted = true;
+                        v.play().catch(() => { });
+                    } else {
+                        v.pause();
+                    }
+                });
+            }
+
             function setPauseState(paused) {
                 if (paused) {
-                    if (activeBg && activeBg.getAttribute('src')) {
-                        activeBg.pause();
-                    }
+                    setBgPlayback(false);
                     if (!panelPausedVisual) {
                         panelPausedVisual = true;
                         gsap.killTweensOf(musicPlayerPanel);
@@ -1346,9 +1599,7 @@
                             });
                     }
                 } else {
-                    if (activeBg && activeBg.getAttribute('src')) {
-                        activeBg.play().catch(() => { });
-                    }
+                    setBgPlayback(true);
                     if (panelPausedVisual) {
                         panelPausedVisual = false;
                         gsap.killTweensOf(musicPlayerPanel);
@@ -1367,110 +1618,150 @@
                 }
             }
 
-            function forceCompleteBgTransition() {
-                nextBg.style.transition = 'none';
-                activeBg.style.transition = 'none';
+            function commitBgSwap(incoming, outgoing) {
+                gsap.killTweensOf([bgStrip, bgSeam]);
+                gsap.set(bgStrip, { xPercent: 0 });
+                gsap.set(bgSeam, { opacity: 0 });
+                incoming.style.left = '0%';
+                outgoing.pause();
+                outgoing.removeAttribute('src');
+                outgoing.load();
+                outgoing.style.left = '50%';
+            }
 
-                nextBg.style.opacity = '1';
-                activeBg.style.opacity = '0';
-
-                activeBg.pause();
-                activeBg.removeAttribute('src');
-                activeBg.load();
-                const temp = activeBg;
-                activeBg = nextBg;
-                nextBg = temp;
-
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        activeBg.style.transition = 'opacity 1.2s ease-in-out';
-                        nextBg.style.transition = 'opacity 1.2s ease-in-out';
-                    });
-                });
-
-                if (bgTransitionTimer) {
-                    clearTimeout(bgTransitionTimer);
-                    bgTransitionTimer = null;
+            function finishBgSwapImmediate() {
+                if (bgTimeline) {
+                    bgTimeline.kill();
+                    bgTimeline = null;
+                }
+                if (bgFinishFn) {
+                    const fn = bgFinishFn;
+                    bgFinishFn = null;
+                    fn();
                 }
             }
 
-            function changeBackground(videoSrc) {
-                if (!videoSrc || videoSrc === currentBgSrc) return;
-
-                if (bgTransitionTimer !== null) {
-                    forceCompleteBgTransition();
+            function changeBackground(videoSrc, direction = 'next', onStart = () => { }) {
+                if (pendingBgCancel) {
+                    pendingBgCancel();
+                    pendingBgCancel = null;
                 }
-
-                currentBgSrc = videoSrc;
-                const myTransitionId = ++bgTransitionId;
-
-                nextBg.pause();
-                nextBg.removeAttribute('src');
-                nextBg.load();
-                nextBg.src = cached(videoSrc);
-                nextBg.load();
-
-                let started = false;
-
-                const finishTransition = () => {
-                    if (myTransitionId !== bgTransitionId) return;
-                    if (started) return;
-                    started = true;
-
-                    if (isPlaying) {
-                        nextBg.play().catch(() => { });
-                    } else {
-                        nextBg.pause();
-                    }
-
-                    nextBg.style.opacity = '1';
-                    activeBg.style.opacity = '0';
-
-                    bgTransitionTimer = setTimeout(() => {
-                        if (myTransitionId !== bgTransitionId) return;
-                        bgTransitionTimer = null;
-
-                        activeBg.pause();
-                        activeBg.removeAttribute('src');
-                        activeBg.load();
-                        const temp = activeBg;
-                        activeBg = nextBg;
-                        nextBg = temp;
-                    }, 1300);
-                };
-
-                if (nextBg.readyState >= 3) {
-                    finishTransition();
+                if (!videoSrc || videoSrc === currentBgSrc) {
+                    onStart();
                     return;
                 }
+                finishBgSwapImmediate();
 
-                const fallbackTimer = setTimeout(() => {
-                    if (myTransitionId !== bgTransitionId) return;
-                    nextBg.removeEventListener('canplay', onCanPlay);
-                    nextBg.removeEventListener('error', onError);
-                    finishTransition();
-                }, 8000);
+                const isFirstBg = currentBgSrc === null;
+                const incoming = nextBg;
+                const outgoing = activeBg;
+                let started = false;
+                let fallbackTimer = null;
 
-                const onCanPlay = () => {
-                    if (myTransitionId !== bgTransitionId) return;
-                    clearTimeout(fallbackTimer);
-                    nextBg.removeEventListener('canplay', onCanPlay);
-                    nextBg.removeEventListener('error', onError);
-                    finishTransition();
+                const cleanup = () => {
+                    if (fallbackTimer) {
+                        clearTimeout(fallbackTimer);
+                        fallbackTimer = null;
+                    }
+                    incoming.removeEventListener('canplay', startSlide);
+                    incoming.removeEventListener('loadeddata', startSlide);
+                    incoming.removeEventListener('error', onError);
                 };
 
-                const onError = () => {
-                    if (myTransitionId !== bgTransitionId) return;
-                    clearTimeout(fallbackTimer);
-                    nextBg.removeEventListener('canplay', onCanPlay);
-                    nextBg.removeEventListener('error', onError);
-                    reportAsset(videoSrc, 'не удалось загрузить фон');
+                function startSlide() {
+                    if (started) return;
                     started = true;
-                    bgTransitionTimer = null;
+                    cleanup();
+                    pendingBgCancel = null;
+
+                    currentBgSrc = videoSrc;
+                    activeBg = incoming;
+                    nextBg = outgoing;
+
+                    incoming.muted = true;
+                    if (isPlaying) incoming.play().catch(() => { });
+                    else incoming.pause();
+
+                    onStart();
+
+                    if (isFirstBg) {
+                        commitBgSwap(incoming, outgoing);
+                        return;
+                    }
+
+                    const isNext = direction !== 'prev';
+                    outgoing.style.left = isNext ? '0%' : '50%';
+                    incoming.style.left = isNext ? '50%' : '0%';
+                    gsap.set(bgStrip, { xPercent: isNext ? 0 : -50 });
+                    gsap.set(bgSeam, { opacity: 0 });
+
+                    bgFinishFn = () => commitBgSwap(incoming, outgoing);
+                    bgTimeline = gsap.timeline({
+                        onComplete: () => {
+                            bgTimeline = null;
+                            const fn = bgFinishFn;
+                            bgFinishFn = null;
+                            if (fn) fn();
+                        }
+                    });
+
+                    bgTimeline
+                        .to(bgStrip, {
+                            xPercent: isNext ? -50 : 0,
+                            duration: BG_SLIDE_DURATION,
+                            ease: 'power2.inOut'
+                        }, 0)
+                        .to(bgSeam, { opacity: 1, duration: 0.18, ease: 'power1.out' }, 0)
+                        .to(bgSeam, { opacity: 0, duration: 0.35, ease: 'power1.in' }, BG_SLIDE_DURATION - 0.35);
+                }
+
+                function onError() {
+                    if (started) return;
+                    started = true;
+                    cleanup();
+                    pendingBgCancel = null;
+                    reportAsset(videoSrc, 'не удалось загрузить фон');
+                    onStart();
+                }
+
+                pendingBgCancel = () => {
+                    started = true;
+                    cleanup();
                 };
 
-                nextBg.addEventListener('canplay', onCanPlay);
-                nextBg.addEventListener('error', onError);
+                incoming.pause();
+                incoming.removeAttribute('src');
+                incoming.load();
+
+                incoming.addEventListener('canplay', startSlide);
+                incoming.addEventListener('loadeddata', startSlide);
+                incoming.addEventListener('error', onError);
+                fallbackTimer = setTimeout(startSlide, 4000);
+
+                incoming.muted = true;
+                incoming.src = cached(videoSrc);
+                incoming.load();
+            }
+
+            const trackInfoEl = document.querySelector('.track-info');
+            function swapTrackInfo(track, direction = 'next') {
+                const apply = () => {
+                    trackTitleEl.textContent = track.title || 'Без названия';
+                    trackArtistEl.textContent = track.artist || '';
+                };
+                gsap.killTweensOf(trackInfoEl);
+                if (musicPlayerPanel.classList.contains('hidden')) {
+                    apply();
+                    gsap.set(trackInfoEl, { x: 0, opacity: 1 });
+                    return;
+                }
+                const dir = direction === 'prev' ? -1 : 1;
+                gsap.timeline()
+                    .to(trackInfoEl, { x: -26 * dir, opacity: 0, duration: 0.22, ease: 'power2.in' })
+                    .add(apply)
+                    .fromTo(trackInfoEl,
+                        { x: 26 * dir, opacity: 0 },
+                        { x: 0, opacity: 1, duration: 0.4, ease: 'power2.out' });
             }
 
             const audio1 = document.getElementById('music-player-1');
@@ -1486,7 +1777,6 @@
             let loadingTrack = false;
             let isUserSeeking = false;
 
-            /* ==================== ШКАЛА ПЕРЕМОТКИ ТРЕКА ==================== */
             function formatTrackTime(seconds) {
                 if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
                 const mins = Math.floor(seconds / 60);
@@ -1530,7 +1820,6 @@
             trackSeekSlider.addEventListener('change', commitSeek);
             trackSeekSlider.addEventListener('pointerup', commitSeek);
 
-            /* ==================== УВЕДОМЛЕНИЕ О ПРЕДЗАГРУЗКЕ СЛЕДУЮЩЕГО ТРЕКА ==================== */
             let midpointPreloadTriggeredFor = null;
             let preloadToastHideTimer = null;
             let preloadGlowHideTimer = null;
@@ -1643,7 +1932,6 @@
                 if (a.getAttribute('src')) reportAsset(a.dataset.orig || a.getAttribute('src'), 'ошибка воспроизведения');
             }));
 
-            /* ==================== КАРУСЕЛЬ ВЫБОРА ТРЕКОВ ==================== */
             let activeSelectorIndex = 0;
             let selectorOpen = false;
             const trackCardRefs = [];
@@ -1657,7 +1945,6 @@
                     card.className = 'track-card';
                     card.dataset.index = String(idx);
 
-                    // Над иконкой: ход и процент загрузки
                     const loadBox = document.createElement('div');
                     loadBox.className = 'track-load-box';
 
@@ -1674,7 +1961,6 @@
                     loadBar.appendChild(loadFill);
                     loadBox.append(loadLabel, loadBar);
 
-                    // Сама иконка с настраиваемым round_icon (0..50%)
                     const roundPct = parseRoundIcon(track.round_icon);
                     const iconFrame = document.createElement('div');
                     iconFrame.className = 'track-icon-frame';
@@ -1702,7 +1988,6 @@
 
                     iconFrame.append(img, playBadge);
 
-                    // Под иконкой: название и исполнитель
                     const meta = document.createElement('div');
                     meta.className = 'track-card-meta';
 
@@ -1800,7 +2085,6 @@
                 musicPlayerPanel.classList.remove('hidden');
             }
 
-            // Прокрутка карусели колёсиком мыши
             let wheelAccum = 0;
             let wheelResetTimer = null;
             trackSelectorScreen.addEventListener('wheel', (e) => {
@@ -1846,10 +2130,10 @@
                     return;
                 }
 
-                await switchToTrack(index, { fromSelector: true });
+                const dir = index < currentTrackIndex ? 'prev' : 'next';
+                await switchToTrack(index, { fromSelector: true, direction: dir });
             }
 
-            /* ==================== СУБТИТРЫ ==================== */
             const subsTextEl = document.getElementById('subtitles-text');
             const SUBS_DISPLAY_DURATION = 4;
             let subsTimer = null;
@@ -2005,8 +2289,60 @@
             audio1.addEventListener('seeking', handleSeekReset);
             audio2.addEventListener('seeking', handleSeekReset);
 
-            /* ==================== ВОСПРОИЗВЕДЕНИЕ И ПЕРЕКЛЮЧЕНИЕ ==================== */
-            function crossfadeToTrack(index) {
+            const playerLoadBar = document.getElementById('player-load-bar');
+            const playerLoadFill = document.getElementById('player-load-fill');
+            const playerLoadLabel = document.getElementById('player-load-label');
+            let playerLoadTitle = '';
+            let playerLoadResetTimer = null;
+
+            function formatMB(bytes) {
+                return (bytes / (1024 * 1024)).toFixed(1).replace('.', ',');
+            }
+
+            function showPlayerLoadBar(track) {
+                clearTimeout(playerLoadResetTimer);
+                playerLoadResetTimer = null;
+                playerLoadTitle = (track && track.title) || '';
+                playerLoadFill.style.transition = 'none';
+                playerLoadFill.style.transform = 'scaleX(0)';
+                void playerLoadFill.offsetWidth;
+                playerLoadFill.style.transition = '';
+                playerLoadBar.classList.add('visible', 'indeterminate');
+                playerLoadLabel.textContent = playerLoadTitle ? `Загрузка «${playerLoadTitle}»…` : 'Загрузка трека…';
+                playerLoadLabel.classList.add('visible');
+            }
+
+            function setPlayerLoadBar(info) {
+                const head = playerLoadTitle ? `Загрузка «${playerLoadTitle}»` : 'Загрузка трека';
+                if (!info || !info.known) {
+                    playerLoadBar.classList.add('indeterminate');
+                    playerLoadLabel.textContent = info && info.loaded > 0
+                        ? `${head} · ${formatMB(info.loaded)} МБ`
+                        : `${head}…`;
+                    return;
+                }
+                playerLoadBar.classList.remove('indeterminate');
+                const pct = Math.round(info.ratio * 100);
+                playerLoadFill.style.transform = `scaleX(${info.ratio})`;
+                playerLoadLabel.textContent = `${head} · ${pct}% (${formatMB(info.loaded)} / ${formatMB(info.total)} МБ)`;
+            }
+
+            function hidePlayerLoadBar() {
+                playerLoadBar.classList.remove('visible');
+                playerLoadLabel.classList.remove('visible');
+                clearTimeout(playerLoadResetTimer);
+                playerLoadResetTimer = setTimeout(() => {
+                    playerLoadResetTimer = null;
+                    if (playerLoadBar.classList.contains('visible')) return;
+                    playerLoadBar.classList.remove('indeterminate');
+                    playerLoadFill.style.transition = 'none';
+                    playerLoadFill.style.transform = 'scaleX(0)';
+                    void playerLoadFill.offsetWidth;
+                    playerLoadFill.style.transition = '';
+                }, 350);
+            }
+
+            function crossfadeToTrack(index, direction = 'next') {
                 if (!musicList.length) return;
                 if (isCrossfading) {
                     gsap.killTweensOf([activeAudio, nextAudio]);
@@ -2028,9 +2364,8 @@
                 isPlaying = true;
                 setPauseState(false);
 
-                trackTitleEl.textContent = track.title;
-                trackArtistEl.textContent = track.artist;
-                changeBackground(track.bg);
+                updateNavTooltips(currentTrackIndex);
+                changeBackground(track.bg, direction, () => swapTrackInfo(track, direction));
 
                 stopSubsChecker();
 
@@ -2089,30 +2424,20 @@
                 }
             }
 
-            const loadRing = document.getElementById('load-ring');
-            const ringFg = loadRing.querySelector('.ring-fg');
-            const RING_C = 194.78;
-            function showLoadRing() { loadRing.classList.add('visible', 'indeterminate'); ringFg.style.strokeDashoffset = ''; }
-            function setLoadRing(p) {
-                if (p <= 0) return;
-                loadRing.classList.remove('indeterminate');
-                ringFg.style.strokeDashoffset = RING_C * (1 - Math.min(p, 1));
-            }
-            function hideLoadRing() { loadRing.classList.remove('visible', 'indeterminate'); }
-
-            async function switchToTrack(index, { fromSelector = false } = {}) {
+            async function switchToTrack(index, { fromSelector = false, direction = 'next' } = {}) {
                 if (!musicList.length) return;
                 targetIndex = index;
                 const myToken = ++loadToken;
                 loadingTrack = false;
-                hideLoadRing();
+                hidePlayerLoadBar();
                 clearCardLoadProgress(index);
+                updateNavTooltips(index);
 
                 const track = musicList[index];
                 const needed = [track.audio, track.bg].filter(Boolean);
+                const missing = needed.filter(src => !assetCache.has(src));
 
-                if (!needed.every(src => assetCache.has(src))) {
-                    // Ставим текущий трек на паузу только при выборе нового трека через меню выбора и начале его загрузки
+                if (missing.length) {
                     if (fromSelector) {
                         if (!activeAudio.paused) {
                             activeAudio.pause();
@@ -2124,51 +2449,49 @@
                     }
 
                     loadingTrack = true;
-                    trackTitleEl.textContent = track.title;
-                    trackArtistEl.textContent = track.artist;
+                    const useCard = fromSelector || selectorOpen;
 
-                    if (fromSelector || selectorOpen) {
+                    if (useCard) {
                         updateCardLoadProgress(index, 0, 'Загрузка 0%');
                     } else {
-                        showLoadRing();
+                        showPlayerLoadBar(track);
                     }
 
-                    const prog = new Array(needed.length).fill(0);
-                    await Promise.all(needed.map((src, i) =>
-                        loadAsset(src, (p) => {
-                            if (myToken !== loadToken) return;
-                            prog[i] = p;
-                            const totalRatio = prog.reduce((a, b) => a + b, 0) / needed.length;
-                            if (fromSelector || selectorOpen) {
-                                updateCardLoadProgress(index, totalRatio);
-                            } else {
-                                setLoadRing(totalRatio);
-                            }
-                        }).catch(err => reportAsset(src, err.message))));
+                    await loadAssetsWithProgress(missing, (info) => {
+                        if (myToken !== loadToken) return;
+                        if (useCard) {
+                            updateCardLoadProgress(index, info.known ? info.ratio : 0);
+                        } else {
+                            setPlayerLoadBar(info);
+                        }
+                    });
 
-                    if (myToken !== loadToken) {
-                        clearCardLoadProgress(index);
-                        return;
-                    }
+                    if (myToken !== loadToken) return;
+
                     loadingTrack = false;
-                    hideLoadRing();
-                    clearCardLoadProgress(index);
+                    if (useCard) {
+                        clearCardLoadProgress(index);
+                    } else {
+                        hidePlayerLoadBar();
+                    }
                 }
 
                 if (selectorOpen) {
                     closeTrackSelector();
                 }
-                crossfadeToTrack(index);
+                crossfadeToTrack(index, direction);
             }
 
             function playNext() {
                 if (!musicList.length) return;
-                switchToTrack((targetIndex + 1) % musicList.length);
+                const base = loadingTrack ? targetIndex : currentTrackIndex;
+                switchToTrack((base + 1) % musicList.length, { direction: 'next' });
             }
 
             function playPrev() {
                 if (!musicList.length) return;
-                switchToTrack((targetIndex - 1 + musicList.length) % musicList.length);
+                const base = loadingTrack ? targetIndex : currentTrackIndex;
+                switchToTrack((base - 1 + musicList.length) % musicList.length, { direction: 'prev' });
             }
 
             function handleAudioEnded(e) {
@@ -2189,7 +2512,6 @@
                 gsap.to(activeAudio, { volume: getEffectiveTrackVolume(), duration: 0.2 });
             });
 
-            /* ==================== СТАРТОВЫЙ ЭКРАН ==================== */
             let startTextContent = '';
             let startIndex = 0;
             let startCursorVisible = true;
@@ -2236,7 +2558,6 @@
                 handleStartScreenClick();
             });
 
-            /* ==================== DEBUG ПАНЕЛЬ И КЛАВИШИ ==================== */
             const debugTimeDisplay = document.getElementById('debug-time-display');
             const debugSeekModal = document.getElementById('debug-seek-modal');
             const debugSeekInput = document.getElementById('debug-seek-input');
