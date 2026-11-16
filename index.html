@@ -675,7 +675,7 @@
             height: 38px;
             border: 1px solid rgba(159, 70, 167, 0.65);
             border-radius: 10px;
-            padding: 7px;
+            padding: 3px;
             background: rgba(124, 0, 255, 0.14);
         }
 
@@ -1165,6 +1165,11 @@
                     <stop offset="0%" stop-color="#6764f0" />
                     <stop offset="100%" stop-color="#da91e6" />
                 </linearGradient>
+                <linearGradient id="pause-btn-grad" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#da91e6" />
+                    <stop offset="50%" stop-color="#6764f0" />
+                    <stop offset="100%" stop-color="#da91e6" />
+                </linearGradient>
             </defs>
         </svg>
 
@@ -1195,12 +1200,10 @@
                 <div class="player-right">
                     <div class="player-controls">
                         <button id="menu-btn" title="Выбрать другой трек" aria-label="Выбрать другой трек">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="url(#player-icon-grad)" stroke-width="2.2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="7" height="7" rx="1.6"></rect>
-                                <rect x="14" y="3" width="7" height="7" rx="1.6"></rect>
-                                <rect x="3" y="14" width="7" height="7" rx="1.6"></rect>
-                                <rect x="14" y="14" width="7" height="7" rx="1.6"></rect>
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="3.5" cy="12" r="2.9" fill="#670bc6" />
+                                <circle cx="12" cy="12" r="4.1" fill="#670bc6" />
+                                <circle cx="20.5" cy="12" r="2.9" fill="#670bc6" />
                             </svg>
                         </button>
 
@@ -1221,14 +1224,19 @@
                         <button id="play-pause-btn" title="Пауза" aria-label="Пауза / Воспроизведение">
                             <svg id="icon-pause" viewBox="0 0 56 56" fill="none">
                                 <defs>
+                                    <linearGradient id="pause-btn-grad" gradientUnits="userSpaceOnUse" x1="28" y1="3"
+                                        x2="28" y2="53">
+                                        <stop offset="0%" stop-color="#da91e6" />
+                                        <stop offset="50%" stop-color="#6764f0" />
+                                        <stop offset="100%" stop-color="#da91e6" />
+                                    </linearGradient>
                                     <mask id="pause-cutout">
                                         <rect width="56" height="56" fill="white" />
                                         <rect x="20" y="18" width="5.5" height="20" rx="2.75" fill="black" />
                                         <rect x="30.5" y="18" width="5.5" height="20" rx="2.75" fill="black" />
                                     </mask>
                                 </defs>
-                                <circle cx="28" cy="28" r="25" fill="url(#player-icon-grad)"
-                                    mask="url(#pause-cutout)" />
+                                <circle cx="28" cy="28" r="25" fill="url(#pause-btn-grad)" mask="url(#pause-cutout)" />
                             </svg>
                             <svg id="icon-play" class="hidden" viewBox="0 0 56 56" fill="none">
                                 <defs>
@@ -1239,7 +1247,7 @@
                                             fill="black" />
                                     </mask>
                                 </defs>
-                                <circle cx="28" cy="28" r="25" fill="url(#player-icon-grad)" mask="url(#play-cutout)" />
+                                <circle cx="28" cy="28" r="25" fill="url(#pause-btn-grad)" mask="url(#play-cutout)" />
                             </svg>
                         </button>
 
@@ -2402,20 +2410,14 @@
                 syncProgressUI(newAudio);
             }
 
-            let pauseCooldown = false;
-
             function togglePlayPause() {
                 if (activeAudio.paused) {
-                    activeAudio.play();
+                    activeAudio.play().catch(() => { });
                     isPlaying = true;
                     setPlayPauseIcon(false);
                     setPauseState(false);
-                    pauseCooldown = true;
-                    setTimeout(() => { pauseCooldown = false; }, 1000);
                     startSubsChecker();
                 } else {
-                    if (pauseCooldown && !debugVisible) return;
-
                     activeAudio.pause();
                     isPlaying = false;
                     setPlayPauseIcon(true);
@@ -2628,20 +2630,30 @@
             }
 
             document.addEventListener('keydown', (e) => {
+                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+                    return;
+                }
+
                 if (selectorOpen && !debugSeekModal.classList.contains('open')) {
-                    if (e.key === 'ArrowRight') {
+                    if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
                         e.preventDefault();
                         setSelectorIndex(activeSelectorIndex + 1, true);
-                    } else if (e.key === 'ArrowLeft') {
+                    } else if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
                         e.preventDefault();
                         setSelectorIndex(activeSelectorIndex - 1, true);
-                    } else if (e.key === 'Enter') {
+                    } else if (e.key === ' ') {
                         e.preventDefault();
                         handleActiveCardActivate(activeSelectorIndex);
                     } else if (e.key === 'Escape' && hasPlayedAnyTrack) {
                         e.preventDefault();
                         closeTrackSelector();
                     }
+                    return;
+                }
+
+                if (!selectorOpen && !musicPlayerPanel.classList.contains('hidden') && e.key === ' ') {
+                    e.preventDefault();
+                    togglePlayPause();
                 }
 
                 if (DEBUG_ENABLED && (e.code === 'F3' || (e.code === 'KeyD' && e.ctrlKey && e.shiftKey))) {

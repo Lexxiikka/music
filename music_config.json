@@ -4,8 +4,9 @@
     "artist": "DEEP-EX-SENSE",
     "audio": "sounds/music__DEEP-EX-SENSE__Хомо_Саспенс.mp3",
     "bg": "sounds/background__DEEP-EX-SENSE__Хомо_Саспенс.mp4",
-    "icon": "sounds/icon_saspens.png",
+    "icon": "sounds/icon__DEEP-EX-SENSE__Хомо_Саспенс.png",
     "round_icon": 30,
+    "sound_multiplier": 0.7,
     "subtitles": {
     "8.72": "Мы убиваем ради забавы",
     "10.06": "И превратим любого друга во врага из-за нала",
@@ -116,8 +117,9 @@
     "artist": "наше последнее лето",
     "audio": "sounds/music__Наше_Последнее_Лето__Скелет.mp3",
     "bg": "sounds/background__Наше_Последнее_Лето__Скелет.mp4",
-    "icon": "sounds/icon_skelet.png",
+    "icon": "sounds/icon__Наше_Последнее_Лето__Скелет.png",
     "round_icon": 30,
+    "sound_multiplier": 0.6,
     "subtitles": {
       "7.6": { "text": "Жизненная ноша", "glow": "#d48676" },
       "9.5": { "text": "Груз тяжёлый за плечами", "glow": "#d48676" },
@@ -168,12 +170,25 @@
     }
   },
   {
+    "title": "Творец",
+    "artist": "Начало!",
+    "audio": "sounds/music__Творец.mp3",
+    "bg": "sounds/background__Творец.mp4",
+    "icon": "sounds/icon__Творец.png",
+    "round_icon": 30,
+    "sound_multiplier": 0.8,
+    "subtitles": {
+
+    }
+  },
+  {
     "title": "Класс Превосходства",
     "artist": "AnimeLamp",
     "audio": "sounds/music__AnimeLamp__Класс_Превосходства.mp3",
     "bg": "sounds/background__AnimeLamp__Класс_Превосходства.mp4",
-    "icon": "",
-    "round_icon": 50,
+    "icon": "sounds/icon__AnimeLamp__Класс_Превосходства.png",
+    "round_icon": 30,
+    "sound_multiplier": 0.6,
     "subtitles": {
 
     }
@@ -183,8 +198,9 @@
     "artist": "СТИНТ & KSB Music",
     "audio": "sounds/music__Стинт__Друзья.mp3",
     "bg": "sounds/background__Стинт__Друзья.mp4",
-    "icon": "",
-    "round_icon": 50,
+    "icon": "sounds/icon__Стинт__Друзья.png",
+    "round_icon": 30,
+    "sound_multiplier": 0.7,
     "subtitles": {
       "2.0": { "text": "Фон не подходит, да, ну и что ты мне сделаешь?", "glow": "#81a99b" },
       "11.9": "Странная штука эта ваша дружба,",
@@ -242,8 +258,9 @@
     "artist": "DEEP-EX-SENSE",
     "audio": "sounds/music__DEEP-EX-SENSE__I.mp3",
     "bg": "sounds/background__DEEP-EX-SENSE__I.mp4",
-    "icon": "",
-    "round_icon": 50,
+    "icon": "sounds/icon__DEEP-EX-SENSE__I.png",
+    "round_icon": 30,
+    "sound_multiplier": 0.7,
     "subtitles": {
       "9.5": "Вечно один",
       "10.6": "Вечно один",
@@ -258,7 +275,7 @@
       "35.1": "Но тот мир, что храним в голове, ",
       "36.8": "не создать за семь дней",
       "38.2": "И когда-нибудь я стану сильнее",
-      "40.5": "Но не в данной вселенной,",
+      "40.7": "Но не в данной вселенной,",
       "41.8": "не в данное время",
       "42.9": "А пока что тот мир",
       "43.9": "что в моей голове",
