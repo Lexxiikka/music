@@ -1,0 +1,2302 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Музыка блеска</title>
+    <link rel="icon" type="image/png" href="assets/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Underdog&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Underdog', Calibri, system-ui, sans-serif;
+        }
+
+        body {
+            font-synthesis: none;
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+
+        #bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .bg-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 1.2s ease-in-out;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            cursor: pointer;
+        }
+
+        #start-text {
+            font-size: 24px;
+            color: #fff;
+            text-align: center;
+        }
+
+        /* Экран выбора треков (карусель) */
+        #track-selector-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 28;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            user-select: none;
+            opacity: 1;
+            transition: opacity 0.35s ease, visibility 0.35s ease;
+        }
+
+        #track-selector-screen.selector-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        #track-carousel-viewport {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #track-carousel-rail {
+            display: flex;
+            align-items: center;
+            gap: 48px;
+            will-change: transform;
+            transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+            padding: 20px 0;
+        }
+
+        .track-card {
+            width: 240px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            cursor: pointer;
+            transform: scale(0.75);
+            opacity: 0.48;
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+        }
+
+        .track-card:hover:not(.active) {
+            opacity: 0.75;
+            transform: scale(0.8);
+        }
+
+        .track-card.active {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* Блок прогресса загрузки НАД иконкой */
+        .track-load-box {
+            width: 200px;
+            min-height: 36px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 6px;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            pointer-events: none;
+        }
+
+        .track-card.active .track-load-box.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .track-load-label {
+            font-size: 14px;
+            color: #e6c7ff;
+            text-shadow: 0 0 8px rgba(124, 0, 255, 0.85);
+            letter-spacing: 0.5px;
+        }
+
+        .track-load-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(124, 0, 255, 0.5);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .track-load-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #6764f0, #a61fd3, #da91e6);
+            border-radius: 999px;
+            transition: width 0.15s linear;
+        }
+
+        /* Иконка трека */
+        .track-icon-frame {
+            position: relative;
+            width: 210px;
+            height: 210px;
+            border: 2px solid rgba(124, 0, 255, 0.35);
+            background: rgba(20, 10, 35, 0.8);
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+            transition: border-color 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        .track-card.active .track-icon-frame {
+            border-color: #9d3bff;
+            box-shadow:
+                0 0 25px rgba(124, 0, 255, 0.75),
+                0 0 55px rgba(124, 0, 255, 0.35);
+        }
+
+        .track-icon-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+        }
+
+        .track-play-badge {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.32);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .track-card.active:not(.loading):hover .track-play-badge {
+            opacity: 1;
+        }
+
+        .track-play-badge img {
+            width: 58px;
+            height: 58px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 12px rgba(124, 0, 255, 0.9));
+        }
+
+        /* Название и исполнитель ПОД иконкой */
+        .track-card-meta {
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .track-card-title {
+            font-size: 1.25em;
+            font-weight: bold;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+        }
+
+        .track-card.active .track-card-title {
+            text-shadow: 0 0 14px rgba(124, 0, 255, 0.75);
+        }
+
+        .track-card-artist {
+            font-size: 0.95em;
+            color: rgba(255, 255, 255, 0.72);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #music-player-panel {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 35%;
+            min-width: 500px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid #7c00ff;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            z-index: 25;
+            box-shadow: 0px 0px 0px rgba(0, 0, 0, 0);
+        }
+
+        .player-top {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .player-progress {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .player-progress span {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.75);
+            min-width: 38px;
+            font-variant-numeric: tabular-nums;
+            user-select: none;
+        }
+
+        #current-time {
+            text-align: left;
+        }
+
+        #total-duration {
+            text-align: right;
+        }
+
+        #track-seek-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            flex: 1;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right,
+                    #6764f0 0%,
+                    #da91e6 var(--progress, 0%),
+                    rgba(255, 255, 255, 0.18) var(--progress, 0%),
+                    rgba(255, 255, 255, 0.18) 100%);
+            outline: none;
+            cursor: pointer;
+        }
+
+        #track-seek-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            box-shadow: 0 0 6px rgba(166, 31, 211, 0.9);
+            transition: transform 0.15s ease;
+        }
+
+        #track-seek-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        #track-seek-slider::-moz-range-track {
+            background: rgba(255, 255, 255, 0.18);
+            height: 6px;
+            border-radius: 3px;
+            border: none;
+        }
+
+        #track-seek-slider::-moz-range-progress {
+            background: linear-gradient(to right, #6764f0, #da91e6);
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        #track-seek-slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #fff;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 6px rgba(166, 31, 211, 0.9);
+        }
+
+        /* Уведомление справа внизу о загрузке следующего трека */
+        #preload-toast {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            z-index: 26;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(10px);
+            border: 1px solid #7c00ff;
+            border-radius: 15px;
+            padding: 22px 28px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 15px;
+            letter-spacing: 0.4px;
+            text-align: center;
+            box-shadow: 0 0 24px rgba(0, 0, 0, 0.55);
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(12px);
+            visibility: hidden;
+            transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s ease;
+        }
+
+        #preload-toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
+        .player-left {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .track-info {
+            text-align: left;
+        }
+
+        #track-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        #track-artist {
+            font-size: 1em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
+
+        .player-right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .player-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+.player-svg-defs {
+            position: absolute;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+        }
+
+        .player-controls button {
+            background: transparent;
+            border: none;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            transition: transform 0.3s, opacity 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .player-controls button svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .player-controls button:hover {
+            transform: scale(1.1);
+            opacity: 0.85;
+        }
+
+        .player-controls #play-pause-btn {
+            width: 55px;
+            height: 55px;
+            position: relative;
+        }
+
+        .player-controls #menu-btn {
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(159, 70, 167, 0.65);
+            border-radius: 10px;
+            padding: 7px;
+            background: rgba(124, 0, 255, 0.14);
+        }
+
+        .player-volume {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .player-volume .volume-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            display: block;
+        }
+
+        .player-volume input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 130px;
+            height: 6px;
+            border-radius: 3px;
+            background:
+                linear-gradient(to right, transparent var(--vol, 30%), #2c2733 var(--vol, 30%)),
+                linear-gradient(to right, #420061 0%, #9f46a7 50%, #ff0000 100%);
+            outline: none;
+            cursor: pointer;
+            margin: 0;
+            padding: 0;
+        }
+
+        .player-volume input[type="range"]::-webkit-slider-runnable-track {
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        .player-volume input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            margin-top: -5px;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.65);
+            transition: transform 0.15s ease;
+        }
+
+        .player-volume input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        .player-volume input[type="range"]::-moz-range-track {
+            background: #2c2733;
+            height: 6px;
+            border-radius: 3px;
+            border: none;
+        }
+
+        .player-volume input[type="range"]::-moz-range-progress {
+            background: linear-gradient(to right, #420061 0%, #9f46a7 50%, #ff0000 100%);
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        .player-volume input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.65);
+        }
+
+        #subtitles-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        #subtitles-text {
+            font-size: 40px;
+            color: #fff;
+            text-align: center;
+            max-width: 80%;
+            padding: 20px 15px;
+            text-shadow:
+                0 0 10px rgba(124, 0, 255, 0.8),
+                0 0 20px rgba(124, 0, 255, 0.5),
+                0 0 40px rgba(124, 0, 255, 0.3),
+                0 0 80px rgba(124, 0, 255, 0.1);
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+            transition: none;
+            letter-spacing: 2px;
+            line-height: 1.6;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(124, 0, 255, 0.2);
+        }
+
+        #subtitles-text.show {
+            animation: subsFadeIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        #subtitles-text.hide {
+            animation: subsFadeOut 0.3s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+        }
+
+        @keyframes subsFadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(20px);
+                filter: blur(10px);
+            }
+
+            60% {
+                filter: blur(0px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+                filter: blur(0px);
+            }
+        }
+
+        @keyframes subsFadeOut {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+                filter: blur(0px);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(1.1) translateY(-20px);
+                filter: blur(6px);
+            }
+        }
+
+        .load-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 72px;
+            height: 72px;
+            margin: -36px 0 0 -36px;
+            transform: rotate(-90deg);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s;
+            pointer-events: none;
+        }
+
+        .load-ring.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .load-ring circle {
+            fill: none;
+            stroke-width: 4;
+        }
+
+        .load-ring .ring-bg {
+            stroke: rgba(255, 255, 255, 0.2);
+        }
+
+        .load-ring .ring-fg {
+            stroke: #a61fd3;
+            stroke-linecap: round;
+            stroke-dasharray: 194.78;
+            stroke-dashoffset: 194.78;
+            transition: stroke-dashoffset 0.2s linear;
+        }
+
+        .load-ring.indeterminate {
+            animation: ringSpin 1s linear infinite;
+        }
+
+        .load-ring.indeterminate .ring-fg {
+            stroke-dashoffset: 146;
+            transition: none;
+        }
+
+        @keyframes ringSpin {
+            from {
+                transform: rotate(-90deg);
+            }
+
+            to {
+                transform: rotate(270deg);
+            }
+        }
+
+        #debug-time-display {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 9999;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            color: #0f0;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 6px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            user-select: none;
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 6px rgba(0, 255, 0, 0.4);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            min-width: 150px;
+            justify-content: center;
+        }
+
+        #debug-time-display:hover {
+            border-color: rgba(0, 255, 0, 0.8);
+            box-shadow: 0 0 12px rgba(0, 255, 0, 0.3);
+        }
+
+        .debug-seek-btn {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .debug-seek-btn:hover {
+            background: rgba(0, 255, 0, 0.25);
+        }
+
+        .debug-seek-btn:active {
+            transform: scale(0.95);
+        }
+
+        #debug-time-text {
+            cursor: pointer;
+            min-width: 90px;
+            text-align: center;
+        }
+
+        #debug-seek-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(0, 255, 0, 0.4);
+            border-radius: 12px;
+            padding: 24px 28px;
+            backdrop-filter: blur(10px);
+            display: none;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 14px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.15);
+            min-width: 280px;
+        }
+
+        #debug-seek-modal.open {
+            display: flex;
+        }
+
+        #debug-seek-modal .modal-title {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: rgba(0, 255, 0, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        #debug-seek-modal input {
+            font-family: 'Courier New', monospace;
+            font-size: 22px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 6px;
+            color: #0f0;
+            padding: 8px 14px;
+            width: 100%;
+            text-align: center;
+            outline: none;
+            letter-spacing: 2px;
+            transition: border-color 0.2s;
+        }
+
+        #debug-seek-modal input:focus {
+            border-color: rgba(0, 255, 0, 0.8);
+        }
+
+        #debug-seek-modal input::placeholder {
+            color: rgba(0, 255, 0, 0.25);
+        }
+
+        #debug-seek-modal .modal-hint {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: rgba(0, 255, 0, 0.35);
+            text-align: center;
+        }
+
+        .debug-subs-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: rgba(0, 255, 0, 0.6);
+            cursor: pointer;
+            user-select: none;
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .debug-subs-toggle input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #0f0;
+            cursor: pointer;
+        }
+
+        #debug-seek-modal .modal-actions {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        #debug-seek-modal .modal-actions button {
+            flex: 1;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 6px;
+            color: #0f0;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #debug-seek-modal .modal-actions button:hover {
+            background: rgba(0, 255, 0, 0.2);
+        }
+
+        #debug-seek-modal .modal-actions button.cancel {
+            color: rgba(255, 80, 80, 0.7);
+            border-color: rgba(255, 80, 80, 0.3);
+        }
+
+        #debug-seek-modal .modal-actions button.cancel:hover {
+            background: rgba(255, 80, 80, 0.15);
+        }
+
+        #error-toasts {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10001;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: min(520px, 90vw);
+            pointer-events: none;
+        }
+
+        .error-toast {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 14px;
+            background: rgba(40, 0, 10, 0.92);
+            border: 1px solid #ff4d6d;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 15px;
+            line-height: 1.4;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 20px rgba(255, 77, 109, 0.35);
+            pointer-events: auto;
+            animation: toastIn 0.3s ease-out;
+        }
+
+        .error-toast.out {
+            animation: toastOut 0.3s ease-in forwards;
+        }
+
+        .error-toast span {
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .error-toast button {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .error-toast button:hover {
+            opacity: 1;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        @keyframes toastOut {
+            to {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+        }
+
+        @media (max-width: 700px) {
+            * {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="error-toasts"></div>
+    <div id="start-screen">
+        <div id="start-text">Идет подгрузка интерфейса 0%</div>
+    </div>
+
+    <div id="track-selector-screen" class="selector-hidden">
+        <div id="track-carousel-viewport">
+            <div id="track-carousel-rail"></div>
+        </div>
+    </div>
+
+    <div id="preload-toast" role="status" aria-live="polite">Началась загрузка следующего трека</div>
+
+    <div class="container">
+        <div id="bg-container">
+            <video id="bg-video-1" class="bg-video" autoplay muted loop playsinline preload="auto"></video>
+            <video id="bg-video-2" class="bg-video" autoplay muted loop playsinline preload="auto"
+                style="opacity: 0;"></video>
+        </div>
+
+    <svg class="player-svg-defs" aria-hidden="true">
+        <defs>
+            <linearGradient id="player-icon-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#6764f0" />
+                <stop offset="100%" stop-color="#da91e6" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <div class="container">
+        <div id="bg-container">
+            <video id="bg-video-1" class="bg-video" autoplay muted loop playsinline preload="auto"></video>
+            <video id="bg-video-2" class="bg-video" autoplay muted loop playsinline preload="auto"
+                style="opacity: 0;"></video>
+        </div>
+
+        <div id="music-player-panel" class="hidden">
+            <div class="player-top">
+                <div class="player-left">
+                    <div class="track-info">
+                        <div id="track-title">Выберите трек</div>
+                        <div id="track-artist">—</div>
+                    </div>
+                    <div class="player-volume">
+                        <svg class="volume-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M3 9.5V14.5H7L12 19V5L7 9.5H3Z" fill="url(#player-icon-grad)" />
+                            <path d="M15.5 8.5C16.8 9.8 16.8 14.2 15.5 15.5" stroke="url(#player-icon-grad)" stroke-width="2.2" stroke-linecap="round" />
+                            <path d="M18.5 5.5C21.2 8.2 21.2 15.8 18.5 18.5" stroke="url(#player-icon-grad)" stroke-width="2.2" stroke-linecap="round" />
+                        </svg>
+                        <input type="range" id="player-volume-slider" min="0" max="1" step="0.01" value="0.3" aria-label="Громкость">
+                    </div>
+                </div>
+                <div class="player-right">
+                    <div class="player-controls">
+                        <button id="menu-btn" title="Выбрать другой трек" aria-label="Выбрать другой трек">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="url(#player-icon-grad)" stroke-width="2.2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7" rx="1.6"></rect>
+                                <rect x="14" y="3" width="7" height="7" rx="1.6"></rect>
+                                <rect x="3" y="14" width="7" height="7" rx="1.6"></rect>
+                                <rect x="14" y="14" width="7" height="7" rx="1.6"></rect>
+                            </svg>
+                        </button>
+                        <button id="prev-btn" title="Предыдущий трек" aria-label="Предыдущий трек">
+                            <svg viewBox="0 0 28 24" fill="none">
+                                <path d="M15 4L6 12L15 20H10.5L1.5 12L10.5 4H15Z" fill="url(#player-icon-grad)" />
+                                <path d="M23.5 4L14.5 12L23.5 20H19L10 12L19 4H23.5Z" fill="url(#player-icon-grad)" opacity="0.72" />
+                            </svg>
+                        </button>
+                        <button id="play-pause-btn" title="Пауза" aria-label="Пауза / Воспроизведение">
+                            <svg id="icon-pause" viewBox="0 0 56 56" fill="none">
+                                <defs>
+                                    <mask id="pause-cutout">
+                                        <rect width="56" height="56" fill="white" />
+                                        <rect x="20" y="18" width="5.5" height="20" rx="2.75" fill="black" />
+                                        <rect x="30.5" y="18" width="5.5" height="20" rx="2.75" fill="black" />
+                                    </mask>
+                                </defs>
+                                <circle cx="28" cy="28" r="25" fill="url(#player-icon-grad)" mask="url(#pause-cutout)" />
+                            </svg>
+                            <svg id="icon-play" class="hidden" viewBox="0 0 56 56" fill="none">
+                                <defs>
+                                    <mask id="play-cutout">
+                                        <rect width="56" height="56" fill="white" />
+                                        <path d="M23 18.5C23 17.3 24.3 16.6 25.3 17.2L38.2 25.7C39.1 26.3 39.1 27.7 38.2 28.3L25.3 36.8C24.3 37.4 23 36.7 23 35.5V18.5Z" fill="black" />
+                                    </mask>
+                                </defs>
+                                <circle cx="28" cy="28" r="25" fill="url(#player-icon-grad)" mask="url(#play-cutout)" />
+                            </svg>
+                            <svg id="load-ring" class="load-ring" viewBox="0 0 70 70" aria-hidden="true">
+                                <circle class="ring-bg" cx="35" cy="35" r="31"></circle>
+                                <circle class="ring-fg" cx="35" cy="35" r="31"></circle>
+                            </svg>
+                        </button>
+                        <button id="next-btn" title="Следующий трек" aria-label="Следующий трек">
+                            <svg viewBox="0 0 28 24" fill="none">
+                                <path d="M13 4L22 12L13 20H17.5L26.5 12L17.5 4H13Z" fill="url(#player-icon-grad)" />
+                                <path d="M4.5 4L13.5 12L4.5 20H9L18 12L9 4H4.5Z" fill="url(#player-icon-grad)" opacity="0.72" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="player-progress">
+                <span id="current-time">0:00</span>
+                <input type="range" id="track-seek-slider" min="0" max="100" step="0.1" value="0" aria-label="Перемотка трека">
+                <span id="total-duration">0:00</span>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div id="debug-time-display">
+        <button id="debug-seek-back" class="debug-seek-btn" title="Назад 5 сек">-5</button>
+        <span id="debug-time-text">0.000</span>
+        <button id="debug-seek-forward" class="debug-seek-btn" title="Вперед 5 сек">+5</button>
+    </div>
+    <div id="debug-seek-modal">
+        <div class="modal-title">Перемотка (секунды)</div>
+        <input type="text" id="debug-seek-input" placeholder="90" maxlength="10">
+        <label class="debug-subs-toggle">
+            <input type="checkbox" id="debug-subs-checkbox">
+            <span>Отключить цитаты</span>
+        </label>
+        <div class="modal-hint">Enter — перемотать, Esc — закрыть</div>
+        <div class="modal-actions">
+            <button class="cancel" id="debug-seek-cancel">Отмена</button>
+            <button id="debug-seek-apply">Перемотать</button>
+        </div>
+    </div>
+
+    <div id="subtitles-overlay">
+        <div id="subtitles-text"></div>
+    </div>
+
+    <audio id="music-player-1" preload="auto"></audio>
+    <audio id="music-player-2" preload="auto"></audio>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+        let musicList = [];
+        const DEBUG_ENABLED = new URLSearchParams(location.search).has('debug');
+        const assetCache = new Map();
+        const failedAssets = [];
+        const MIME = {
+            mp4: 'video/mp4',
+            mp3: 'audio/mpeg',
+            png: 'image/png',
+            jpg: 'image/jpeg',
+            jpeg: 'image/jpeg',
+            webp: 'image/webp',
+            gif: 'image/gif',
+            svg: 'image/svg+xml'
+        };
+        const cached = (src) => assetCache.get(src) ?? src;
+
+        function parseMultiplier(value) {
+            if (value === null || value === undefined || value === '') return 1;
+            const num = Number(value);
+            return Number.isFinite(num) && num >= 0 ? num : 1;
+        }
+
+        function parseRoundIcon(value) {
+            const num = Number(value);
+            if (!Number.isFinite(num)) return 0;
+            return Math.min(50, Math.max(0, num));
+        }
+
+        function clampVolume(value) {
+            return Math.min(1, Math.max(0, value));
+        }
+
+        function showError(message) {
+            console.error(message);
+            const box = document.getElementById('error-toasts');
+            if (!box) return;
+            while (box.children.length >= 4) box.firstChild.remove();
+            const el = document.createElement('div');
+            el.className = 'error-toast';
+            el.setAttribute('role', 'alert');
+            const text = document.createElement('span');
+            text.textContent = '\u26A0 ' + message;
+            const close = document.createElement('button');
+            close.textContent = '\u00D7';
+            close.setAttribute('aria-label', 'Закрыть');
+            const dismiss = () => { el.classList.add('out'); setTimeout(() => el.remove(), 300); };
+            close.addEventListener('click', dismiss);
+            setTimeout(dismiss, 12000);
+            el.append(text, close);
+            box.appendChild(el);
+        }
+
+        function reportAsset(src, reason) {
+            if (failedAssets.includes(src)) return;
+            failedAssets.push(src);
+            showError(`Не удалось загрузить файл: ${src}${reason ? ' (' + reason + ')' : ''}`);
+        }
+
+        async function fetchToBlobUrl(src, onProgress = () => { }) {
+            const res = await fetch(src);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const total = +res.headers.get('Content-Length') || 0;
+            const reader = res.body.getReader();
+            const chunks = [];
+            let loaded = 0;
+            for (; ;) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                loaded += value.length;
+                if (total) onProgress(Math.min(loaded / total, 0.99));
+            }
+            const ext = src.split('.').pop().toLowerCase();
+            const blob = new Blob(chunks, { type: MIME[ext] || res.headers.get('Content-Type') || '' });
+            const url = URL.createObjectURL(blob);
+            assetCache.set(src, url);
+            return url;
+        }
+
+        const inflight = new Map();
+        function loadAsset(src, onProgress = () => { }) {
+            if (assetCache.has(src)) { onProgress(1); return Promise.resolve(assetCache.get(src)); }
+            let job = inflight.get(src);
+            if (!job) {
+                job = { listeners: new Set(), last: 0 };
+                job.promise = fetchToBlobUrl(src, (p) => { job.last = p; job.listeners.forEach(f => f(p)); })
+                    .finally(() => inflight.delete(src));
+                inflight.set(src, job);
+            }
+            job.listeners.add(onProgress);
+            onProgress(job.last);
+            return job.promise;
+        }
+
+        function decodeImage(src) {
+            const img = new Image();
+            img.src = src;
+            return img.decode().then(() => true, () => false);
+        }
+
+        async function preloadImageAsset(src, onProgress = () => { }) {
+            const blobUrl = await loadAsset(src, (p) => onProgress(p * 0.9));
+            const ok = await decodeImage(blobUrl);
+            if (!ok) throw new Error('ошибка декодирования изображения');
+            onProgress(1);
+            return blobUrl;
+        }
+
+        async function loadMusicConfig() {
+            try {
+                const response = await fetch('music_config.json', { cache: 'no-cache' });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} ${response.statusText}`);
+                }
+                const data = await response.json();
+                const list = Array.isArray(data) ? data : data && data.tracks;
+                if (!Array.isArray(list)) {
+                    throw new Error('в music_config.json нет массива треков (ожидается [...] или {"tracks": [...]})');
+                }
+                musicList = list;
+            } catch (err) {
+                console.error('[music_config] Ошибка загрузки music_config.json:', err);
+                showError('Не удалось загрузить music_config.json: ' + err.message);
+                musicList = [];
+            }
+        }
+
+        let initialAssetsLoaded = false;
+
+        async function preloadInitialAssets() {
+            if (typeof gsap === 'undefined') {
+                showError('Не удалось загрузить библиотеку анимаций (GSAP). Обновите страницу.');
+            }
+            const startText = document.getElementById('start-text');
+            const uiImages = ['assets/icon.png'];
+            const trackIcons = [...new Set(musicList.map(t => t.icon).filter(Boolean))];
+
+            const jobs = [
+                (set) => document.fonts.load('16px Underdog').catch(() => { }).then(() => set(1)),
+                ...uiImages.map(src => (set) => preloadImageAsset(src, set)
+                    .catch(err => reportAsset(src, err.message)).then(() => set(1))),
+                ...trackIcons.map(src => (set) => preloadImageAsset(src, set)
+                    .catch(err => reportAsset(src, err.message)).then(() => set(1)))
+            ];
+
+            const progress = new Array(jobs.length).fill(0);
+            const render = () => {
+                const pct = Math.floor(progress.reduce((a, b) => a + b, 0) / jobs.length * 100);
+                startText.textContent = `Идет подгрузка интерфейса ${pct}%`;
+            };
+            render();
+
+            await Promise.all(jobs.map((job, i) => job(v => { progress[i] = v; render(); })));
+            initialAssetsLoaded = true;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadMusicConfig();
+
+            const startScreen = document.getElementById('start-screen');
+            const startText = document.getElementById('start-text');
+            const trackSelectorScreen = document.getElementById('track-selector-screen');
+            const trackCarouselViewport = document.getElementById('track-carousel-viewport');
+            const trackCarouselRail = document.getElementById('track-carousel-rail');
+            const musicPlayerPanel = document.getElementById('music-player-panel');
+            const menuBtn = document.getElementById('menu-btn');
+            const preloadToast = document.getElementById('preload-toast');
+
+            const iconPauseEl = document.getElementById('icon-pause');
+            const iconPlayEl = document.getElementById('icon-play');
+            const trackTitleEl = document.getElementById('track-title');
+            const trackArtistEl = document.getElementById('track-artist');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const playerVolumeSlider = document.getElementById('player-volume-slider');
+            const trackSeekSlider = document.getElementById('track-seek-slider');
+            const currentTimeEl = document.getElementById('current-time');
+            const totalDurationEl = document.getElementById('total-duration');
+
+            function setPlayPauseIcon(paused) {
+                if (paused) {
+                    iconPauseEl.classList.add('hidden');
+                    iconPlayEl.classList.remove('hidden');
+                    playPauseBtn.title = 'Воспроизвести';
+                } else {
+                    iconPlayEl.classList.add('hidden');
+                    iconPauseEl.classList.remove('hidden');
+                    playPauseBtn.title = 'Пауза';
+                }
+            }
+
+            function syncVolumeSliderFill(val) {
+                const pct = Math.min(100, Math.max(0, (Number(val) || 0) * 100));
+                playerVolumeSlider.style.setProperty('--vol', `${pct}%`);
+            }
+            syncVolumeSliderFill(playerVolumeSlider.value);
+
+            const bg1 = document.getElementById('bg-video-1');
+            const bg2 = document.getElementById('bg-video-2');
+            let activeBg = bg1;
+            let nextBg = bg2;
+            let currentBgSrc = null;
+            let bgTransitionTimer = null;
+            let bgTransitionId = 0;
+
+            let isPlaying = false;
+            let panelPausedVisual = false;
+
+            function setPauseState(paused) {
+                if (paused) {
+                    if (activeBg && activeBg.getAttribute('src')) {
+                        activeBg.pause();
+                    }
+                    if (!panelPausedVisual) {
+                        panelPausedVisual = true;
+                        gsap.killTweensOf(musicPlayerPanel);
+                        gsap.timeline()
+                            .to(musicPlayerPanel, {
+                                boxShadow: '-16px 14px 26px rgba(220, 0, 30, 0.85)',
+                                duration: 0.15,
+                                ease: 'power2.out'
+                            })
+                            .to(musicPlayerPanel, {
+                                boxShadow: '16px 14px 26px rgba(220, 0, 30, 0.85)',
+                                duration: 0.5,
+                                ease: 'power2.inOut'
+                            });
+                    }
+                } else {
+                    if (activeBg && activeBg.getAttribute('src')) {
+                        activeBg.play().catch(() => { });
+                    }
+                    if (panelPausedVisual) {
+                        panelPausedVisual = false;
+                        gsap.killTweensOf(musicPlayerPanel);
+                        gsap.timeline()
+                            .to(musicPlayerPanel, {
+                                boxShadow: '16px 14px 26px rgba(0, 100, 30, 0.9)',
+                                duration: 0.18,
+                                ease: 'power2.out'
+                            })
+                            .to(musicPlayerPanel, {
+                                boxShadow: '0px 0px 0px rgba(0, 100, 30, 0)',
+                                duration: 0.45,
+                                ease: 'power2.inOut'
+                            });
+                    }
+                }
+            }
+
+            function forceCompleteBgTransition() {
+                nextBg.style.transition = 'none';
+                activeBg.style.transition = 'none';
+
+                nextBg.style.opacity = '1';
+                activeBg.style.opacity = '0';
+
+                activeBg.pause();
+                activeBg.removeAttribute('src');
+                activeBg.load();
+                const temp = activeBg;
+                activeBg = nextBg;
+                nextBg = temp;
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        activeBg.style.transition = 'opacity 1.2s ease-in-out';
+                        nextBg.style.transition = 'opacity 1.2s ease-in-out';
+                    });
+                });
+
+                if (bgTransitionTimer) {
+                    clearTimeout(bgTransitionTimer);
+                    bgTransitionTimer = null;
+                }
+            }
+
+            function changeBackground(videoSrc) {
+                if (!videoSrc || videoSrc === currentBgSrc) return;
+
+                if (bgTransitionTimer !== null) {
+                    forceCompleteBgTransition();
+                }
+
+                currentBgSrc = videoSrc;
+                const myTransitionId = ++bgTransitionId;
+
+                nextBg.pause();
+                nextBg.removeAttribute('src');
+                nextBg.load();
+                nextBg.src = cached(videoSrc);
+                nextBg.load();
+
+                let started = false;
+
+                const finishTransition = () => {
+                    if (myTransitionId !== bgTransitionId) return;
+                    if (started) return;
+                    started = true;
+
+                    if (isPlaying) {
+                        nextBg.play().catch(() => { });
+                    } else {
+                        nextBg.pause();
+                    }
+
+                    nextBg.style.opacity = '1';
+                    activeBg.style.opacity = '0';
+
+                    bgTransitionTimer = setTimeout(() => {
+                        if (myTransitionId !== bgTransitionId) return;
+                        bgTransitionTimer = null;
+
+                        activeBg.pause();
+                        activeBg.removeAttribute('src');
+                        activeBg.load();
+                        const temp = activeBg;
+                        activeBg = nextBg;
+                        nextBg = temp;
+                    }, 1300);
+                };
+
+                if (nextBg.readyState >= 3) {
+                    finishTransition();
+                    return;
+                }
+
+                const fallbackTimer = setTimeout(() => {
+                    if (myTransitionId !== bgTransitionId) return;
+                    nextBg.removeEventListener('canplay', onCanPlay);
+                    nextBg.removeEventListener('error', onError);
+                    finishTransition();
+                }, 8000);
+
+                const onCanPlay = () => {
+                    if (myTransitionId !== bgTransitionId) return;
+                    clearTimeout(fallbackTimer);
+                    nextBg.removeEventListener('canplay', onCanPlay);
+                    nextBg.removeEventListener('error', onError);
+                    finishTransition();
+                };
+
+                const onError = () => {
+                    if (myTransitionId !== bgTransitionId) return;
+                    clearTimeout(fallbackTimer);
+                    nextBg.removeEventListener('canplay', onCanPlay);
+                    nextBg.removeEventListener('error', onError);
+                    reportAsset(videoSrc, 'не удалось загрузить фон');
+                    started = true;
+                    bgTransitionTimer = null;
+                };
+
+                nextBg.addEventListener('canplay', onCanPlay);
+                nextBg.addEventListener('error', onError);
+            }
+
+            const audio1 = document.getElementById('music-player-1');
+            const audio2 = document.getElementById('music-player-2');
+            let activeAudio = audio1;
+            let nextAudio = audio2;
+            let targetVolume = Number.isFinite(parseFloat(playerVolumeSlider.value)) ? parseFloat(playerVolumeSlider.value) : 0.3;
+            let isCrossfading = false;
+            let currentTrackIndex = 0;
+            let targetIndex = 0;
+            let hasPlayedAnyTrack = false;
+            let loadToken = 0;
+            let loadingTrack = false;
+            let isUserSeeking = false;
+
+            /* ==================== ШКАЛА ПЕРЕМОТКИ ТРЕКА ==================== */
+            function formatTrackTime(seconds) {
+                if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${String(secs).padStart(2, '0')}`;
+            }
+
+            function syncProgressUI(audio = activeAudio) {
+                const duration = audio && Number.isFinite(audio.duration) ? audio.duration : 0;
+                const current = audio && Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+
+                totalDurationEl.textContent = formatTrackTime(duration);
+
+                if (!isUserSeeking) {
+                    currentTimeEl.textContent = formatTrackTime(current);
+                    const pct = duration > 0 ? Math.min(100, Math.max(0, (current / duration) * 100)) : 0;
+                    trackSeekSlider.value = pct;
+                    trackSeekSlider.style.setProperty('--progress', `${pct}%`);
+                }
+            }
+
+            trackSeekSlider.addEventListener('input', () => {
+                isUserSeeking = true;
+                const pct = parseFloat(trackSeekSlider.value) || 0;
+                trackSeekSlider.style.setProperty('--progress', `${pct}%`);
+                if (activeAudio && Number.isFinite(activeAudio.duration) && activeAudio.duration > 0) {
+                    currentTimeEl.textContent = formatTrackTime((pct / 100) * activeAudio.duration);
+                }
+            });
+
+            function commitSeek() {
+                if (!isUserSeeking) return;
+                isUserSeeking = false;
+                const pct = parseFloat(trackSeekSlider.value) || 0;
+                if (activeAudio && Number.isFinite(activeAudio.duration) && activeAudio.duration > 0) {
+                    activeAudio.currentTime = (pct / 100) * activeAudio.duration;
+                }
+                syncProgressUI(activeAudio);
+            }
+
+            trackSeekSlider.addEventListener('change', commitSeek);
+            trackSeekSlider.addEventListener('pointerup', commitSeek);
+
+            /* ==================== УВЕДОМЛЕНИЕ О ПРЕДЗАГРУЗКЕ СЛЕДУЮЩЕГО ТРЕКА ==================== */
+            let midpointPreloadTriggeredFor = null;
+            let preloadToastHideTimer = null;
+            let preloadJobId = 0;
+
+            function showPreloadToast(text) {
+                if (preloadToastHideTimer) {
+                    clearTimeout(preloadToastHideTimer);
+                    preloadToastHideTimer = null;
+                }
+                preloadToast.textContent = text;
+                preloadToast.classList.add('visible');
+            }
+
+            function hidePreloadToastAfter(delayMs = 5000) {
+                if (preloadToastHideTimer) {
+                    clearTimeout(preloadToastHideTimer);
+                }
+                preloadToastHideTimer = setTimeout(() => {
+                    preloadToast.classList.remove('visible');
+                    preloadToastHideTimer = null;
+                }, delayMs);
+            }
+
+            function checkMidpointPreload() {
+                if (!isPlaying || loadingTrack || musicList.length <= 1) return;
+                if (!activeAudio.duration || isNaN(activeAudio.duration)) return;
+
+                if (activeAudio.currentTime >= activeAudio.duration / 2) {
+                    const nextIdx = (currentTrackIndex + 1) % musicList.length;
+                    if (midpointPreloadTriggeredFor === nextIdx) return;
+                    midpointPreloadTriggeredFor = nextIdx;
+
+                    const nextTrack = musicList[nextIdx];
+                    const needed = [nextTrack.audio, nextTrack.bg].filter(Boolean);
+                    if (!needed.length || needed.every(src => assetCache.has(src))) return;
+
+                    const myJobId = ++preloadJobId;
+                    showPreloadToast('Началась загрузка следующего трека');
+
+                    Promise.all(
+                        needed.map(src => loadAsset(src).catch(err => reportAsset(src, err.message)))
+                    ).then(() => {
+                        if (myJobId !== preloadJobId) return;
+                        showPreloadToast('Следующий трек загружен');
+                        hidePreloadToastAfter(5000);
+                    });
+                }
+            }
+
+            [audio1, audio2].forEach(audio => {
+                audio.addEventListener('timeupdate', () => {
+                    if (audio === activeAudio) {
+                        checkMidpointPreload();
+                        syncProgressUI(audio);
+                    }
+                });
+                audio.addEventListener('loadedmetadata', () => {
+                    if (audio === activeAudio) syncProgressUI(audio);
+                });
+                audio.addEventListener('durationchange', () => {
+                    if (audio === activeAudio) syncProgressUI(audio);
+                });
+            });
+
+            function getEffectiveTrackVolume(track = musicList[currentTrackIndex]) {
+                const multiplier = track ? parseMultiplier(track.sound_multiplier) : 1;
+                return clampVolume(targetVolume * multiplier);
+            }
+
+            audio1.volume = 0;
+            audio2.volume = 0;
+            [audio1, audio2].forEach(a => a.addEventListener('error', () => {
+                if (a.getAttribute('src')) reportAsset(a.dataset.orig || a.getAttribute('src'), 'ошибка воспроизведения');
+            }));
+
+            /* ==================== КАРУСЕЛЬ ВЫБОРА ТРЕКОВ ==================== */
+            let activeSelectorIndex = 0;
+            let selectorOpen = false;
+            const trackCardRefs = [];
+
+            function buildTrackCarousel() {
+                trackCarouselRail.innerHTML = '';
+                trackCardRefs.length = 0;
+
+                musicList.forEach((track, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'track-card';
+                    card.dataset.index = String(idx);
+
+                    // Над иконкой: ход и процент загрузки
+                    const loadBox = document.createElement('div');
+                    loadBox.className = 'track-load-box';
+
+                    const loadLabel = document.createElement('div');
+                    loadLabel.className = 'track-load-label';
+                    loadLabel.textContent = 'Загрузка 0%';
+
+                    const loadBar = document.createElement('div');
+                    loadBar.className = 'track-load-bar';
+
+                    const loadFill = document.createElement('div');
+                    loadFill.className = 'track-load-fill';
+
+                    loadBar.appendChild(loadFill);
+                    loadBox.append(loadLabel, loadBar);
+
+                    // Сама иконка с настраиваемым round_icon (0..50%)
+                    const roundPct = parseRoundIcon(track.round_icon);
+                    const iconFrame = document.createElement('div');
+                    iconFrame.className = 'track-icon-frame';
+                    iconFrame.style.borderRadius = `${roundPct}%`;
+
+                    const img = document.createElement('img');
+                    img.src = cached(track.icon || 'assets/icon.png');
+                    img.alt = track.title || `Трек ${idx + 1}`;
+                    img.style.borderRadius = `${roundPct}%`;
+                    img.onerror = () => {
+                        if (track.icon) reportAsset(track.icon, 'ошибка отображения иконки');
+                        img.onerror = null;
+                        img.src = cached('assets/icon.png');
+                    };
+
+                    const playBadge = document.createElement('div');
+                    playBadge.className = 'track-play-badge';
+                    playBadge.style.borderRadius = `${roundPct}%`;
+                    playBadge.innerHTML = `
+                        <svg width="58" height="58" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+                            <circle cx="28" cy="28" r="25" fill="url(#player-icon-grad)" />
+                            <path d="M23 18.5C23 17.3 24.3 16.6 25.3 17.2L38.2 25.7C39.1 26.3 39.1 27.7 38.2 28.3L25.3 36.8C24.3 37.4 23 36.7 23 35.5V18.5Z" fill="#12091d" />
+                        </svg>
+                    `;
+
+                    iconFrame.append(img, playBadge);
+
+                    // Под иконкой: название и исполнитель
+                    const meta = document.createElement('div');
+                    meta.className = 'track-card-meta';
+
+                    const titleEl = document.createElement('div');
+                    titleEl.className = 'track-card-title';
+                    titleEl.textContent = track.title || 'Без названия';
+
+                    const artistEl = document.createElement('div');
+                    artistEl.className = 'track-card-artist';
+                    artistEl.textContent = track.artist || '';
+
+                    meta.append(titleEl, artistEl);
+                    card.append(loadBox, iconFrame, meta);
+
+                    card.addEventListener('click', () => {
+                        if (!selectorOpen) return;
+                        if (idx !== activeSelectorIndex) {
+                            setSelectorIndex(idx, true);
+                        } else {
+                            handleActiveCardActivate(idx);
+                        }
+                    });
+
+                    trackCarouselRail.appendChild(card);
+                    trackCardRefs.push({ card, loadBox, loadLabel, loadFill });
+                });
+            }
+
+            function updateCardLoadProgress(index, ratio, statusText = null) {
+                const ref = trackCardRefs[index];
+                if (!ref) return;
+                const pct = Math.round(Math.min(1, Math.max(0, ratio)) * 100);
+                ref.card.classList.add('loading');
+                ref.loadBox.classList.add('visible');
+                ref.loadFill.style.width = `${pct}%`;
+                ref.loadLabel.textContent = statusText || `Загрузка ${pct}%`;
+            }
+
+            function clearCardLoadProgress(index) {
+                const ref = trackCardRefs[index];
+                if (!ref) return;
+                ref.card.classList.remove('loading');
+                ref.loadBox.classList.remove('visible');
+                ref.loadFill.style.width = '0%';
+                ref.loadLabel.textContent = 'Загрузка 0%';
+            }
+
+            function updateCarouselPosition(animate = true) {
+                if (!trackCardRefs.length) return;
+                trackCardRefs.forEach((ref, i) => {
+                    ref.card.classList.toggle('active', i === activeSelectorIndex);
+                    if (i !== activeSelectorIndex && !loadingTrack) {
+                        clearCardLoadProgress(i);
+                    }
+                });
+
+                const activeCard = trackCardRefs[activeSelectorIndex].card;
+                const viewportWidth = trackCarouselViewport.clientWidth || window.innerWidth;
+                const cardCenter = activeCard.offsetLeft + activeCard.offsetWidth / 2;
+                const offsetX = viewportWidth / 2 - cardCenter;
+
+                trackCarouselRail.style.transition = animate
+                    ? 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
+                    : 'none';
+                trackCarouselRail.style.transform = `translateX(${offsetX}px)`;
+            }
+
+            function setSelectorIndex(newIndex, animate = true) {
+                if (!musicList.length) return;
+                const clamped = Math.max(0, Math.min(musicList.length - 1, newIndex));
+                if (clamped === activeSelectorIndex && animate) return;
+
+                if (loadingTrack) {
+                    loadToken++;
+                    loadingTrack = false;
+                    clearCardLoadProgress(activeSelectorIndex);
+                }
+
+                activeSelectorIndex = clamped;
+                updateCarouselPosition(animate);
+            }
+
+            function openTrackSelector(focusIndex = currentTrackIndex) {
+                if (!musicList.length) return;
+                selectorOpen = true;
+                activeSelectorIndex = Math.max(0, Math.min(musicList.length - 1, focusIndex));
+                trackSelectorScreen.classList.remove('selector-hidden');
+                musicPlayerPanel.classList.add('hidden');
+                requestAnimationFrame(() => updateCarouselPosition(false));
+            }
+
+            function closeTrackSelector() {
+                selectorOpen = false;
+                trackSelectorScreen.classList.add('selector-hidden');
+                musicPlayerPanel.classList.remove('hidden');
+            }
+
+            // Прокрутка карусели колёсиком мыши
+            let wheelAccum = 0;
+            let wheelResetTimer = null;
+            trackSelectorScreen.addEventListener('wheel', (e) => {
+                if (!selectorOpen || !musicList.length) return;
+                e.preventDefault();
+
+                const delta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+                wheelAccum += delta;
+
+                clearTimeout(wheelResetTimer);
+                wheelResetTimer = setTimeout(() => { wheelAccum = 0; }, 160);
+
+                const THRESHOLD = 45;
+                if (wheelAccum >= THRESHOLD) {
+                    wheelAccum = 0;
+                    setSelectorIndex(activeSelectorIndex + 1, true);
+                } else if (wheelAccum <= -THRESHOLD) {
+                    wheelAccum = 0;
+                    setSelectorIndex(activeSelectorIndex - 1, true);
+                }
+            }, { passive: false });
+
+            window.addEventListener('resize', () => {
+                if (selectorOpen) updateCarouselPosition(false);
+            });
+
+            menuBtn.addEventListener('click', () => {
+                openTrackSelector(currentTrackIndex);
+            });
+
+            async function handleActiveCardActivate(index) {
+                if (loadingTrack) return;
+
+                if (hasPlayedAnyTrack && currentTrackIndex === index && !isCrossfading) {
+                    closeTrackSelector();
+                    if (activeAudio.paused) {
+                        activeAudio.play().catch(() => { });
+                        isPlaying = true;
+                        setPlayPauseIcon(false);
+                        setPauseState(false);
+                        startSubsChecker();
+                    }
+                    return;
+                }
+
+                await switchToTrack(index, { fromSelector: true });
+            }
+
+            /* ==================== СУБТИТРЫ ==================== */
+            const subsTextEl = document.getElementById('subtitles-text');
+            const SUBS_DISPLAY_DURATION = 4;
+            let subsTimer = null;
+            let subsCheckInterval = null;
+            let currentSubsKey = null;
+            let lastCheckTime = 0;
+            let subsEnabled = true;
+
+            function getCurrentSubtitles() {
+                const track = musicList[currentTrackIndex];
+                return track && track.subtitles ? track.subtitles : null;
+            }
+
+            function showSubsText(key, entry) {
+                currentSubsKey = key;
+
+                let displayText, glowColor;
+                if (typeof entry === 'object' && entry !== null && entry.text) {
+                    displayText = entry.text;
+                    glowColor = entry.glow || null;
+                } else {
+                    displayText = entry;
+                    glowColor = null;
+                }
+
+                subsTextEl.textContent = displayText;
+
+                if (typeof glowColor === 'string' && glowColor.trim().toLowerCase() === 'none') {
+                    subsTextEl.style.textShadow = 'none';
+                } else if (glowColor) {
+                    subsTextEl.style.textShadow = `
+                        0 0 10px ${glowColor},
+                        0 0 20px ${glowColor},
+                        0 0 40px ${glowColor},
+                        0 0 80px ${glowColor}
+                    `;
+                } else {
+                    subsTextEl.style.textShadow = '';
+                }
+
+                subsTextEl.className = '';
+                void subsTextEl.offsetWidth;
+                subsTextEl.classList.add('show');
+
+                if (subsTimer) clearTimeout(subsTimer);
+                subsTimer = setTimeout(() => {
+                    subsTextEl.classList.remove('show');
+                    subsTextEl.classList.add('hide');
+                    currentSubsKey = null;
+                    setTimeout(() => {
+                        if (!subsTextEl.classList.contains('show')) {
+                            subsTextEl.className = '';
+                            subsTextEl.style.textShadow = '';
+                        }
+                    }, 300);
+                }, SUBS_DISPLAY_DURATION * 1000);
+            }
+
+            function checkSubsTime() {
+                if (!isPlaying || !subsEnabled) return;
+
+                const subtitles = getCurrentSubtitles();
+                if (!subtitles) {
+                    if (currentSubsKey !== null) {
+                        subsTextEl.classList.remove('show');
+                        subsTextEl.classList.add('hide');
+                        currentSubsKey = null;
+                        setTimeout(() => {
+                            if (!subsTextEl.classList.contains('show')) {
+                                subsTextEl.className = '';
+                                subsTextEl.style.textShadow = '';
+                            }
+                        }, 300);
+                    }
+                    return;
+                }
+
+                const currentTime = activeAudio.currentTime;
+
+                if (currentTime < lastCheckTime - 0.05) {
+                    lastCheckTime = currentTime;
+                    return;
+                }
+
+                let latestKey = null;
+                let latestTime = -Infinity;
+
+                for (const key in subtitles) {
+                    const t = parseFloat(key);
+                    if (isNaN(t)) continue;
+                    if (t > lastCheckTime && t <= currentTime + 0.001) {
+                        if (t > latestTime) {
+                            latestTime = t;
+                            latestKey = key;
+                        }
+                    }
+                }
+
+                lastCheckTime = currentTime;
+
+                if (latestKey && currentSubsKey !== latestKey) {
+                    showSubsText(latestKey, subtitles[latestKey]);
+                }
+            }
+
+            function startSubsChecker() {
+                stopSubsChecker();
+                lastCheckTime = activeAudio.currentTime;
+                subsCheckInterval = setInterval(checkSubsTime, 100);
+            }
+
+            function stopSubsChecker() {
+                if (subsCheckInterval) {
+                    clearInterval(subsCheckInterval);
+                    subsCheckInterval = null;
+                }
+                if (subsTimer) {
+                    clearTimeout(subsTimer);
+                    subsTimer = null;
+                }
+                currentSubsKey = null;
+                if (subsTextEl.classList.contains('show')) {
+                    subsTextEl.classList.remove('show');
+                    subsTextEl.classList.add('hide');
+                    setTimeout(() => {
+                        if (!subsTextEl.classList.contains('show')) {
+                            subsTextEl.className = '';
+                            subsTextEl.style.textShadow = '';
+                        }
+                    }, 300);
+                } else {
+                    subsTextEl.className = '';
+                    subsTextEl.style.textShadow = '';
+                }
+            }
+
+            function handleSeekReset(e) {
+                const audio = e.target;
+                if (audio !== activeAudio) return;
+                lastCheckTime = audio.currentTime - 0.5;
+                if (currentSubsKey !== null) {
+                    subsTextEl.classList.remove('show');
+                    subsTextEl.classList.add('hide');
+                    currentSubsKey = null;
+                    setTimeout(() => {
+                        if (!subsTextEl.classList.contains('show')) {
+                            subsTextEl.className = '';
+                            subsTextEl.style.textShadow = '';
+                        }
+                    }, 300);
+                }
+            }
+            audio1.addEventListener('seeking', handleSeekReset);
+            audio2.addEventListener('seeking', handleSeekReset);
+
+            /* ==================== ВОСПРОИЗВЕДЕНИЕ И ПЕРЕКЛЮЧЕНИЕ ==================== */
+            function crossfadeToTrack(index) {
+                if (!musicList.length) return;
+                if (isCrossfading) {
+                    gsap.killTweensOf([activeAudio, nextAudio]);
+                    activeAudio.pause();
+                    activeAudio.currentTime = 0;
+                    nextAudio.pause();
+                    nextAudio.currentTime = 0;
+                    nextAudio.volume = 0;
+                    activeAudio.volume = getEffectiveTrackVolume();
+                    isCrossfading = false;
+                }
+
+                isCrossfading = true;
+                currentTrackIndex = index;
+                hasPlayedAnyTrack = true;
+                midpointPreloadTriggeredFor = null;
+                const track = musicList[currentTrackIndex];
+
+                isPlaying = true;
+                setPauseState(false);
+
+                trackTitleEl.textContent = track.title;
+                trackArtistEl.textContent = track.artist;
+                changeBackground(track.bg);
+
+                stopSubsChecker();
+
+                nextAudio.dataset.orig = track.audio;
+                nextAudio.src = cached(track.audio);
+                nextAudio.volume = 0;
+                nextAudio.currentTime = 0;
+                nextAudio.play().catch(() => { });
+
+                const oldAudio = activeAudio;
+                const newAudio = nextAudio;
+                activeAudio = newAudio;
+                nextAudio = oldAudio;
+
+                setPlayPauseIcon(false);
+
+                startSubsChecker();
+
+                gsap.to(oldAudio, {
+                    volume: 0, duration: 1, ease: 'power1.inOut',
+                    onComplete: () => {
+                        oldAudio.pause();
+                        oldAudio.currentTime = 0;
+                    }
+                });
+
+                gsap.to(newAudio, {
+                    volume: getEffectiveTrackVolume(track), duration: 1, ease: 'power1.inOut',
+                    onComplete: () => {
+                        isCrossfading = false;
+                    }
+                });
+
+                syncProgressUI(newAudio);
+            }
+
+            let pauseCooldown = false;
+
+            function togglePlayPause() {
+                if (activeAudio.paused) {
+                    activeAudio.play();
+                    isPlaying = true;
+                    setPlayPauseIcon(false);
+                    setPauseState(false);
+                    pauseCooldown = true;
+                    setTimeout(() => { pauseCooldown = false; }, 1000);
+                    startSubsChecker();
+                } else {
+                    if (pauseCooldown && !debugVisible) return;
+
+                    activeAudio.pause();
+                    isPlaying = false;
+                    setPlayPauseIcon(true);
+                    setPauseState(true);
+                    stopSubsChecker();
+                }
+            }
+
+            const loadRing = document.getElementById('load-ring');
+            const ringFg = loadRing.querySelector('.ring-fg');
+            const RING_C = 194.78;
+            function showLoadRing() { loadRing.classList.add('visible', 'indeterminate'); ringFg.style.strokeDashoffset = ''; }
+            function setLoadRing(p) {
+                if (p <= 0) return;
+                loadRing.classList.remove('indeterminate');
+                ringFg.style.strokeDashoffset = RING_C * (1 - Math.min(p, 1));
+            }
+            function hideLoadRing() { loadRing.classList.remove('visible', 'indeterminate'); }
+
+            async function switchToTrack(index, { fromSelector = false } = {}) {
+                if (!musicList.length) return;
+                targetIndex = index;
+                const myToken = ++loadToken;
+                loadingTrack = false;
+                hideLoadRing();
+                clearCardLoadProgress(index);
+
+                const track = musicList[index];
+                const needed = [track.audio, track.bg].filter(Boolean);
+
+                if (!needed.every(src => assetCache.has(src))) {
+                    // Ставим текущий трек на паузу только при выборе нового трека через меню выбора и начале его загрузки
+                    if (fromSelector) {
+                        if (!activeAudio.paused) {
+                            activeAudio.pause();
+                        }
+                        isPlaying = false;
+                        setPlayPauseIcon(true);
+                        setPauseState(true);
+                        stopSubsChecker();
+                    }
+
+                    loadingTrack = true;
+                    trackTitleEl.textContent = track.title;
+                    trackArtistEl.textContent = track.artist;
+
+                    if (fromSelector || selectorOpen) {
+                        updateCardLoadProgress(index, 0, 'Загрузка 0%');
+                    } else {
+                        showLoadRing();
+                    }
+
+                    const prog = new Array(needed.length).fill(0);
+                    await Promise.all(needed.map((src, i) =>
+                        loadAsset(src, (p) => {
+                            if (myToken !== loadToken) return;
+                            prog[i] = p;
+                            const totalRatio = prog.reduce((a, b) => a + b, 0) / needed.length;
+                            if (fromSelector || selectorOpen) {
+                                updateCardLoadProgress(index, totalRatio);
+                            } else {
+                                setLoadRing(totalRatio);
+                            }
+                        }).catch(err => reportAsset(src, err.message))));
+
+                    if (myToken !== loadToken) {
+                        clearCardLoadProgress(index);
+                        return;
+                    }
+                    loadingTrack = false;
+                    hideLoadRing();
+                    clearCardLoadProgress(index);
+                }
+
+                if (selectorOpen) {
+                    closeTrackSelector();
+                }
+                crossfadeToTrack(index);
+            }
+
+            function playNext() {
+                if (!musicList.length) return;
+                switchToTrack((targetIndex + 1) % musicList.length);
+            }
+
+            function playPrev() {
+                if (!musicList.length) return;
+                switchToTrack((targetIndex - 1 + musicList.length) % musicList.length);
+            }
+
+            function handleAudioEnded(e) {
+                if (!isCrossfading && !loadingTrack && e.target === activeAudio) {
+                    playNext();
+                }
+            }
+            audio1.addEventListener('ended', handleAudioEnded);
+            audio2.addEventListener('ended', handleAudioEnded);
+
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            nextBtn.addEventListener('click', playNext);
+            prevBtn.addEventListener('click', playPrev);
+
+            playerVolumeSlider.addEventListener('input', (e) => {
+                targetVolume = parseFloat(e.target.value);
+                syncVolumeSliderFill(targetVolume);
+                gsap.to(activeAudio, { volume: getEffectiveTrackVolume(), duration: 0.2 });
+            });
+
+            /* ==================== СТАРТОВЫЙ ЭКРАН ==================== */
+            let startTextContent = '';
+            let startIndex = 0;
+            let startCursorVisible = true;
+            let typeWriterInterval;
+            let typewriterComplete = false;
+
+            function runStartScreenEffect() {
+                const finalMessage = "Ровно через клик мы откроем выбор музыки, , ,";
+                if (!initialAssetsLoaded) {
+                    typeWriterInterval = setTimeout(runStartScreenEffect, 100);
+                } else if (!typewriterComplete) {
+                    if (startIndex <= finalMessage.length) {
+                        startTextContent = finalMessage.slice(0, startIndex);
+                        startText.textContent = startTextContent + (startCursorVisible ? '|' : ' ');
+                        if (startIndex < finalMessage.length) startIndex++;
+                        typeWriterInterval = setTimeout(runStartScreenEffect, 100);
+                    } else {
+                        typewriterComplete = true;
+                        setInterval(() => {
+                            startCursorVisible = !startCursorVisible;
+                            startText.textContent = startTextContent + (startCursorVisible ? '|' : ' ');
+                        }, 500);
+                    }
+                }
+            }
+            runStartScreenEffect();
+
+            function handleStartScreenClick() {
+                if (!initialAssetsLoaded) return;
+                clearTimeout(typeWriterInterval);
+                startScreen.classList.add('hidden');
+                if (musicList.length > 0) {
+                    openTrackSelector(0);
+                } else {
+                    musicPlayerPanel.classList.remove('hidden');
+                    trackTitleEl.textContent = 'Треки не найдены';
+                    trackArtistEl.textContent = 'Проверьте music_config.json';
+                }
+            }
+
+            startScreen.addEventListener('click', handleStartScreenClick);
+            startScreen.addEventListener('touchstart', (e) => {
+                if (!initialAssetsLoaded || !typewriterComplete) { e.preventDefault(); return; }
+                handleStartScreenClick();
+            });
+
+            /* ==================== DEBUG ПАНЕЛЬ И КЛАВИШИ ==================== */
+            const debugTimeDisplay = document.getElementById('debug-time-display');
+            const debugSeekModal = document.getElementById('debug-seek-modal');
+            const debugSeekInput = document.getElementById('debug-seek-input');
+            const debugTimeText = document.getElementById('debug-time-text');
+            let debugTimeInterval = null;
+            let debugVisible = false;
+
+            function formatTime(seconds) {
+                if (!seconds || isNaN(seconds)) return '0.000';
+                const s = Math.floor(seconds);
+                const ms = Math.floor((seconds % 1) * 1000);
+                return String(s) + '.' + String(ms).padStart(3, '0');
+            }
+
+            function updateDebugTime() {
+                const audio = activeAudio;
+                if (audio && audio.duration && !isNaN(audio.duration)) {
+                    debugTimeText.textContent = formatTime(audio.currentTime);
+                } else {
+                    debugTimeText.textContent = '0.000';
+                }
+            }
+
+            function showDebugTime() {
+                debugVisible = true;
+                debugTimeDisplay.style.display = 'flex';
+                updateDebugTime();
+                if (debugTimeInterval) clearInterval(debugTimeInterval);
+                debugTimeInterval = setInterval(updateDebugTime, 50);
+            }
+
+            function hideDebugTime() {
+                debugVisible = false;
+                debugTimeDisplay.style.display = 'none';
+                if (debugTimeInterval) {
+                    clearInterval(debugTimeInterval);
+                    debugTimeInterval = null;
+                }
+            }
+
+            function openSeekModal() {
+                if (!debugVisible) return;
+                const audio = activeAudio;
+                if (audio && audio.duration && !isNaN(audio.duration)) {
+                    debugSeekInput.value = String(Math.floor(audio.currentTime));
+                } else {
+                    debugSeekInput.value = '0';
+                }
+                debugSeekModal.classList.add('open');
+                debugSeekInput.focus();
+                debugSeekInput.select();
+            }
+
+            function closeSeekModal() {
+                debugSeekModal.classList.remove('open');
+            }
+
+            function applySeek() {
+                const val = debugSeekInput.value.trim();
+                if (!val) { closeSeekModal(); return; }
+                const seconds = parseInt(val, 10);
+                if (isNaN(seconds) || seconds < 0) { closeSeekModal(); return; }
+                const audio = activeAudio;
+                if (audio && audio.duration && !isNaN(audio.duration)) {
+                    audio.currentTime = Math.min(seconds, audio.duration);
+                }
+                closeSeekModal();
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (selectorOpen && !debugSeekModal.classList.contains('open')) {
+                    if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        setSelectorIndex(activeSelectorIndex + 1, true);
+                    } else if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        setSelectorIndex(activeSelectorIndex - 1, true);
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleActiveCardActivate(activeSelectorIndex);
+                    } else if (e.key === 'Escape' && hasPlayedAnyTrack) {
+                        e.preventDefault();
+                        closeTrackSelector();
+                    }
+                }
+
+                if (DEBUG_ENABLED && (e.code === 'F3' || (e.code === 'KeyD' && e.ctrlKey && e.shiftKey))) {
+                    e.preventDefault();
+                    if (debugVisible) {
+                        hideDebugTime();
+                    } else {
+                        showDebugTime();
+                    }
+                }
+                if (e.key === 'Escape' && debugSeekModal.classList.contains('open')) {
+                    closeSeekModal();
+                }
+                if (e.key === 'Enter' && debugSeekModal.classList.contains('open')) {
+                    applySeek();
+                }
+            });
+
+            debugTimeText.addEventListener('click', openSeekModal);
+
+            document.getElementById('debug-seek-back').addEventListener('click', (e) => {
+                e.stopPropagation();
+                const audio = activeAudio;
+                if (audio && audio.duration && !isNaN(audio.duration)) {
+                    audio.currentTime = Math.max(0, audio.currentTime - 5);
+                }
+            });
+
+            document.getElementById('debug-seek-forward').addEventListener('click', (e) => {
+                e.stopPropagation();
+                const audio = activeAudio;
+                if (audio && audio.duration && !isNaN(audio.duration)) {
+                    audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+                }
+            });
+
+            document.getElementById('debug-seek-apply').addEventListener('click', applySeek);
+            document.getElementById('debug-seek-cancel').addEventListener('click', closeSeekModal);
+
+            document.getElementById('debug-subs-checkbox').addEventListener('change', (e) => {
+                subsEnabled = !e.target.checked;
+                if (!subsEnabled) {
+                    stopSubsChecker();
+                } else if (isPlaying) {
+                    startSubsChecker();
+                }
+            });
+
+            await preloadInitialAssets();
+            buildTrackCarousel();
+        });
+    </script>
+</body>
+
+</html>
