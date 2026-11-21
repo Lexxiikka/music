@@ -53,6 +53,177 @@
             display: block;
         }
 
+        #creator-badge {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            min-width: 18vw;
+            min-height: 82px;
+            padding: 12px 50px 12px 14px;
+            background: rgba(0, 0, 0, 0.68);
+            backdrop-filter: blur(10px);
+            border: 2px solid #000000;
+            border-radius: 9999px;
+            box-shadow:
+                6px 6px 14px rgba(124, 0, 255, 0.75),
+                10px 10px 24px rgba(124, 0, 255, 0.35),
+                inset 0 0 12px rgba(0, 0, 0, 0.65);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            z-index: 35;
+            user-select: none;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        #creator-avatar-link {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: block;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #creator-top-text,
+        #creator-lower-text {
+            font-size: 13px;
+            line-height: 1.2;
+            color: rgba(255, 255, 255, 0.72);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            will-change: transform, opacity;
+        }
+
+        #creator-name {
+            display: inline-block;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1.25;
+            color: #ffffff;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            transform-origin: left center;
+            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: default;
+        }
+
+        #creator-site-link {
+            position: absolute;
+            right: 14px;
+            bottom: 6px;
+            width: 29px;
+            height: 29px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid #000000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+            transition: transform 0.2s ease, filter 0.2s ease;
+            overflow: hidden;
+        }
+
+        #creator-badge:hover {
+            box-shadow:
+                8px 8px 18px rgba(124, 0, 255, 0.9),
+                12px 12px 28px rgba(124, 0, 255, 0.45),
+                inset 0 0 12px rgba(0, 0, 0, 0.65);
+        }
+
+
+        #creator-avatar-link.disabled {
+            pointer-events: none;
+            cursor: default;
+        }
+
+        #creator-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            border: 1.5px solid #000000;
+            box-shadow:
+                4px 4px 10px rgba(158, 10, 23, 0.85),
+                7px 7px 18px rgba(158, 10, 23, 0.45);
+            background: rgba(0, 0, 0, 0.5);
+            will-change: box-shadow;
+        }
+
+        .creator-text-block {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            min-width: 0;
+            flex: 1;
+            gap: 2px;
+        }
+
+        #creator-top-text.is-clickable,
+        #creator-lower-text.is-clickable {
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        #creator-top-text.is-clickable:hover,
+        #creator-lower-text.is-clickable:hover {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        #creator-top-text:empty,
+        #creator-lower-text:empty {
+            display: none;
+        }
+
+        #creator-badge:hover #creator-name {
+            transform: scale(1.2);
+            overflow: visible;
+            background: linear-gradient(90deg, #7c00ff 0%, #d10003 50%, #7c00ff 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            text-shadow: none;
+            animation: creatorNickShimmer 1.8s linear infinite;
+        }
+
+        @keyframes creatorNickShimmer {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 200% 50%;
+            }
+        }
+
+        #creator-site-link:hover {
+            transform: scale(1.14);
+            filter: brightness(1.15);
+        }
+
+        #creator-site-link.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        #creator-site-icon {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
         #bg-container {
             position: fixed;
             top: 0;
@@ -1283,6 +1454,23 @@
 <body>
     <input type="text" id="mini-console-input" autocomplete="off" spellcheck="false" aria-label="Консоль">
     <div id="error-toasts"></div>
+
+    <div id="creator-badge" aria-label="Информация о создателе сайта">
+        <a id="creator-avatar-link" href="#" target="_blank" rel="noopener noreferrer" title="Сайт создателя"
+            aria-label="Сайт создателя">
+            <img id="creator-avatar" src="assets/creator.png" alt="Аватар создателя">
+        </a>
+        <div class="creator-text-block">
+            <div id="creator-top-text"></div>
+            <div id="creator-name"></div>
+            <div id="creator-lower-text"></div>
+        </div>
+        <a id="creator-site-link" href="#" target="_blank" rel="noopener noreferrer" title="Сайт создателя"
+            aria-label="Сайт создателя">
+            <img id="creator-site-icon" src="assets/creator_site_icon.png" alt="Сайт создателя">
+        </a>
+    </div>
+
     <div id="start-screen">
         <div id="start-text">Идет подгрузка интерфейса 0%</div>
     </div>
@@ -1437,6 +1625,10 @@
             <input type="checkbox" id="debug-subs-checkbox">
             <span>Отключить цитаты</span>
         </label>
+        <label class="debug-subs-toggle">
+            <input type="checkbox" id="debug-creator-checkbox">
+            <span>Отключить плашку создателя</span>
+        </label>
         <div class="debug-secrets-actions">
             <button type="button" id="debug-show-secrets-btn" class="debug-secret-btn">Показать все секреты</button>
             <button type="button" id="debug-hide-secrets-btn" class="debug-secret-btn">Скрыть все секреты</button>
@@ -1444,7 +1636,7 @@
         <div class="modal-hint">Enter — перемотать, Esc — закрыть</div>
         <div class="modal-actions">
             <button type="button" class="cancel" id="debug-seek-cancel">Отмена</button>
-            <button type="button" id="debug-seek-apply">Перемотать</button>
+            <button type="button" class="cancel" id="debug-seek-apply">Перемотать</button>
         </div>
     </div>
 
@@ -1459,6 +1651,7 @@
     <script>
         let musicList = [];
         let trackColumns = [];
+        let creatorInfo = null;
 
         const urlParams = new URLSearchParams(location.search);
         let aalEnabled = urlParams.has('aal');
@@ -1675,6 +1868,105 @@
             return Boolean(a && b && a.col === b.col && a.row === b.row);
         }
 
+        function normalizeTextList(value) {
+            if (Array.isArray(value)) {
+                return value
+                    .filter(item => item !== null && item !== undefined)
+                    .map(item => String(item));
+            }
+            if (value !== null && value !== undefined) {
+                return [String(value)];
+            }
+            return [];
+        }
+
+        function pickRandomText(list, excludeText = null) {
+            if (!list.length) return '';
+            if (list.length === 1) return list[0];
+            const candidates = excludeText !== null
+                ? list.filter(item => item !== excludeText)
+                : list;
+            const pool = candidates.length ? candidates : list;
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        function setupRotatingCreatorText(el, rawValue) {
+            const list = normalizeTextList(rawValue);
+            el._textList = list;
+            el._isAnimating = false;
+            el.textContent = pickRandomText(list);
+
+            const uniqueCount = new Set(list).size;
+            el.classList.toggle('is-clickable', uniqueCount > 1);
+
+            if (!el._boundClick) {
+                el._boundClick = true;
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const items = el._textList || [];
+                    if (new Set(items).size <= 1 || el._isAnimating) return;
+
+                    const nextText = pickRandomText(items, el.textContent);
+                    if (nextText === el.textContent) return;
+
+                    el._isAnimating = true;
+                    if (typeof gsap !== 'undefined') {
+                        gsap.killTweensOf(el);
+                        gsap.to(el, {
+                            opacity: 0,
+                            y: -5,
+                            duration: 0.18,
+                            ease: 'power2.in',
+                            onComplete: () => {
+                                el.textContent = nextText;
+                                gsap.fromTo(
+                                    el,
+                                    { opacity: 0, y: 5 },
+                                    {
+                                        opacity: 1,
+                                        y: 0,
+                                        duration: 0.24,
+                                        ease: 'power2.out',
+                                        onComplete: () => {
+                                            el._isAnimating = false;
+                                        }
+                                    }
+                                );
+                            }
+                        });
+                    } else {
+                        el.textContent = nextText;
+                        el._isAnimating = false;
+                    }
+                });
+            }
+        }
+
+        function applyCreatorBadgeConfig(info) {
+            const topEl = document.getElementById('creator-top-text');
+            const nameEl = document.getElementById('creator-name');
+            const lowerEl = document.getElementById('creator-lower-text');
+            const linkEl = document.getElementById('creator-site-link');
+            const avatarLinkEl = document.getElementById('creator-avatar-link');
+
+            const data = info || {};
+            setupRotatingCreatorText(topEl, data.top_text);
+            nameEl.textContent = data.creator_name || '';
+            setupRotatingCreatorText(lowerEl, data.lower_text);
+
+            const rawLink = typeof data.creator_link === 'string' ? data.creator_link.trim() : '';
+            [linkEl, avatarLinkEl].forEach((anchor) => {
+                if (!anchor) return;
+                if (rawLink) {
+                    anchor.href = rawLink;
+                    anchor.classList.remove('disabled');
+                } else {
+                    anchor.removeAttribute('href');
+                    anchor.classList.add('disabled');
+                }
+            });
+        }
+
         async function loadMusicConfig() {
             try {
                 const response = await fetch('music_config.json', { cache: 'no-cache' });
@@ -1686,7 +1978,26 @@
                 if (!Array.isArray(list)) {
                     throw new Error('в music_config.json нет массива треков (ожидается [...] или {"tracks": [...]})');
                 }
-                musicList = list;
+
+                if (!Array.isArray(data) && data && typeof data === 'object' && ('creator_name' in data || 'creator_link' in data)) {
+                    creatorInfo = data;
+                }
+
+                const tracksOnly = [];
+                list.forEach((item) => {
+                    if (!item || typeof item !== 'object') return;
+                    const isCreatorItem = ('creator_name' in item || 'creator_link' in item || 'top_text' in item || 'lower_text' in item)
+                        && !('audio' in item)
+                        && !('title' in item);
+                    if (isCreatorItem) {
+                        creatorInfo = item;
+                    } else {
+                        tracksOnly.push(item);
+                    }
+                });
+
+                applyCreatorBadgeConfig(creatorInfo);
+                musicList = tracksOnly;
                 buildTrackHierarchy(musicList);
             } catch (err) {
                 console.error('[music_config] Ошибка загрузки music_config.json:', err);
@@ -1703,7 +2014,7 @@
                 showError('Не удалось загрузить библиотеку анимаций (GSAP). Обновите страницу.');
             }
             const startText = document.getElementById('start-text');
-            const uiImages = ['assets/icon.png', 'assets/background.png'];
+            const uiImages = ['assets/icon.png', 'assets/background.png', 'assets/creator.png', 'assets/creator_site_icon.png'];
             const allIcons = [];
             trackColumns.forEach(colArr => {
                 colArr.forEach(node => {
@@ -1735,6 +2046,10 @@
             await loadMusicConfig();
 
             const miniConsoleInput = document.getElementById('mini-console-input');
+            const creatorBadge = document.getElementById('creator-badge');
+            const creatorAvatarLink = document.getElementById('creator-avatar-link');
+            const creatorAvatar = document.getElementById('creator-avatar');
+            const creatorSiteIcon = document.getElementById('creator-site-icon');
             const startScreen = document.getElementById('start-screen');
             const startText = document.getElementById('start-text');
             const trackSelectorScreen = document.getElementById('track-selector-screen');
@@ -1768,6 +2083,85 @@
             const debugTimeText = document.getElementById('debug-time-text');
             const debugShowSecretsBtn = document.getElementById('debug-show-secrets-btn');
             const debugHideSecretsBtn = document.getElementById('debug-hide-secrets-btn');
+
+            (function initAvatarShadowOrbit() {
+                const DEFAULT_ANGLE = Math.PI / 4;
+                const R1 = Math.hypot(4, 4);
+                const R2 = Math.hypot(7, 7);
+                const ORBIT_SPEED = 2.6;
+
+                let angle = DEFAULT_ANGLE;
+                let alpha = 1;
+                let mode = 'idle';
+                let rafId = null;
+                let lastTs = 0;
+
+                function renderAvatarShadow() {
+                    const cos = Math.cos(angle);
+                    const sin = Math.sin(angle);
+                    const x1 = (cos * R1).toFixed(2);
+                    const y1 = (sin * R1).toFixed(2);
+                    const x2 = (cos * R2).toFixed(2);
+                    const y2 = (sin * R2).toFixed(2);
+                    const a1 = (0.85 * alpha).toFixed(3);
+                    const a2 = (0.45 * alpha).toFixed(3);
+                    creatorAvatar.style.boxShadow =
+                        `${x1}px ${y1}px 10px rgba(158, 10, 23, ${a1}), ` +
+                        `${x2}px ${y2}px 18px rgba(158, 10, 23, ${a2})`;
+                }
+
+                function tick(ts) {
+                    const dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0.016;
+                    lastTs = ts;
+
+                    if (mode === 'orbiting') {
+                        angle = (angle + ORBIT_SPEED * dt) % (Math.PI * 2);
+                        alpha = Math.min(1, alpha + dt * 5);
+                        renderAvatarShadow();
+                        rafId = requestAnimationFrame(tick);
+                    } else if (mode === 'fadingOut') {
+                        alpha = Math.max(0, alpha - dt * 5.5);
+                        renderAvatarShadow();
+                        if (alpha <= 0) {
+                            angle = DEFAULT_ANGLE;
+                            mode = 'fadingIn';
+                        }
+                        rafId = requestAnimationFrame(tick);
+                    } else if (mode === 'fadingIn') {
+                        alpha = Math.min(1, alpha + dt * 4.5);
+                        renderAvatarShadow();
+                        if (alpha >= 1) {
+                            mode = 'idle';
+                            rafId = null;
+                            lastTs = 0;
+                        } else {
+                            rafId = requestAnimationFrame(tick);
+                        }
+                    }
+                }
+
+                function startLoop() {
+                    if (rafId === null) {
+                        lastTs = 0;
+                        rafId = requestAnimationFrame(tick);
+                    }
+                }
+
+                creatorAvatarLink.addEventListener('mouseenter', () => {
+                    if (mode === 'fadingOut' || mode === 'fadingIn') {
+                        angle = DEFAULT_ANGLE;
+                    }
+                    mode = 'orbiting';
+                    startLoop();
+                });
+
+                creatorAvatarLink.addEventListener('mouseleave', () => {
+                    if (mode === 'orbiting') {
+                        mode = 'fadingOut';
+                        startLoop();
+                    }
+                });
+            })();
 
             let currentTrackCoord = { col: 0, row: 0 };
             let targetCoord = { col: 0, row: 0 };
@@ -3216,8 +3610,14 @@
                 }
             });
 
+            document.getElementById('debug-creator-checkbox').addEventListener('change', (e) => {
+                creatorBadge.classList.toggle('hidden', e.target.checked);
+            });
+
             await preloadInitialAssets();
             selectorBg.style.backgroundImage = `url("${cached('assets/background.png')}")`;
+            creatorAvatar.src = cached('assets/creator.png');
+            creatorSiteIcon.src = cached('assets/creator_site_icon.png');
             buildTrackCarousel();
         });
     </script>
