@@ -30,6 +30,29 @@
             position: relative;
         }
 
+        #mini-console-input {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20vw;
+            margin: 0;
+            padding: 2px 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1;
+            color: #fff;
+            background: rgba(128, 128, 128, 0.5);
+            border: none;
+            border-radius: 0;
+            outline: none;
+            z-index: 10002;
+            display: none;
+        }
+
+        #mini-console-input.open {
+            display: block;
+        }
+
         #bg-container {
             position: fixed;
             top: 0;
@@ -116,8 +139,8 @@
             background: rgba(0, 0, 0, 0.72);
             backdrop-filter: blur(10px);
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: flex-start;
+            justify-content: flex-start;
             overflow: hidden;
             user-select: none;
             opacity: 1;
@@ -158,18 +181,26 @@
             z-index: 1;
             width: 100%;
             height: 100%;
-            display: flex;
-            align-items: center;
             overflow: hidden;
         }
 
         #track-carousel-rail {
+            position: relative;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 48px;
             will-change: transform;
             transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-            padding: 20px 0;
+            width: max-content;
+        }
+
+        .track-column {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 36px;
+            flex-shrink: 0;
         }
 
         .track-card {
@@ -186,12 +217,29 @@
             transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
         }
 
-        .track-card:hover:not(.active) {
+        .track-card.is-next-track {
+            position: relative;
+        }
+
+        .track-card.is-next-track::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            width: 2px;
+            height: 22px;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, rgba(124, 0, 255, 0.15), rgba(166, 31, 211, 0.75));
+            pointer-events: none;
+        }
+
+        .track-card:hover:not(.active):not(.is-active) {
             opacity: 0.75;
             transform: scale(0.8);
         }
 
-        .track-card.active {
+        .track-card.active,
+        .track-card.is-active {
             transform: scale(1);
             opacity: 1;
         }
@@ -210,7 +258,8 @@
             pointer-events: none;
         }
 
-        .track-card.active .track-load-box.visible {
+        .track-card.active .track-load-box.visible,
+        .track-card.is-active .track-load-box.visible {
             opacity: 1;
             transform: translateY(0);
         }
@@ -250,7 +299,8 @@
             transition: border-color 0.35s ease, box-shadow 0.35s ease;
         }
 
-        .track-card.active .track-icon-frame {
+        .track-card.active .track-icon-frame,
+        .track-card.is-active .track-icon-frame {
             border-color: #9d3bff;
             box-shadow:
                 0 0 25px rgba(124, 0, 255, 0.75),
@@ -276,7 +326,8 @@
             transition: opacity 0.25s ease;
         }
 
-        .track-card.active:not(.loading):hover .track-play-badge {
+        .track-card.active:not(.loading):hover .track-play-badge,
+        .track-card.is-active:not(.loading):hover .track-play-badge {
             opacity: 1;
         }
 
@@ -305,7 +356,8 @@
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
         }
 
-        .track-card.active .track-card-title {
+        .track-card.active .track-card-title,
+        .track-card.is-active .track-card-title {
             text-shadow: 0 0 14px rgba(124, 0, 255, 0.75);
         }
 
@@ -452,8 +504,8 @@
             border-color: rgba(159, 70, 167, 0.75) transparent transparent transparent;
         }
 
-        .nav-btn-wrap:hover .nav-tooltip,
-        .nav-btn-wrap:has(button:focus-visible) .nav-tooltip {
+        .nav-btn-wrap:not(.tooltip-suppressed):hover .nav-tooltip,
+        .nav-btn-wrap:not(.tooltip-suppressed):has(button:focus-visible) .nav-tooltip {
             opacity: 1;
             visibility: visible;
             transform: translateX(-50%) translateY(0);
@@ -911,7 +963,8 @@
         #debug-time-display {
             position: fixed;
             top: 15px;
-            right: 15px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 9999;
             font-family: 'Courier New', monospace;
             font-size: 18px;
@@ -930,6 +983,7 @@
             transition: border-color 0.2s, box-shadow 0.2s;
             min-width: 150px;
             justify-content: center;
+            cursor: pointer;
         }
 
         #debug-time-display:hover {
@@ -959,28 +1013,27 @@
         }
 
         #debug-time-text {
-            cursor: pointer;
             min-width: 90px;
             text-align: center;
         }
 
         #debug-seek-modal {
             position: fixed;
-            top: 50%;
+            top: 64px;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             z-index: 10000;
             background: rgba(0, 0, 0, 0.9);
             border: 1px solid rgba(0, 255, 0, 0.4);
             border-radius: 12px;
-            padding: 24px 28px;
+            padding: 20px 24px;
             backdrop-filter: blur(10px);
             display: none;
             flex-direction: column;
             align-items: stretch;
-            gap: 14px;
+            gap: 12px;
             box-shadow: 0 0 30px rgba(0, 255, 0, 0.15);
-            min-width: 280px;
+            min-width: 310px;
         }
 
         #debug-seek-modal.open {
@@ -996,7 +1049,7 @@
             text-align: center;
         }
 
-        #debug-seek-modal input {
+        #debug-seek-input {
             font-family: 'Courier New', monospace;
             font-size: 22px;
             background: rgba(0, 0, 0, 0.6);
@@ -1011,11 +1064,11 @@
             transition: border-color 0.2s;
         }
 
-        #debug-seek-modal input:focus {
+        #debug-seek-input:focus {
             border-color: rgba(0, 255, 0, 0.8);
         }
 
-        #debug-seek-modal input::placeholder {
+        #debug-seek-input::placeholder {
             color: rgba(0, 255, 0, 0.25);
         }
 
@@ -1029,21 +1082,56 @@
         .debug-subs-toggle {
             display: flex;
             align-items: center;
+            justify-content: flex-end;
             gap: 8px;
             font-family: 'Courier New', monospace;
             font-size: 13px;
-            color: rgba(0, 255, 0, 0.6);
+            color: rgba(0, 255, 0, 0.75);
             cursor: pointer;
             user-select: none;
             width: 100%;
-            justify-content: flex-start;
+            white-space: nowrap;
         }
 
         .debug-subs-toggle input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
+            width: 15px;
+            height: 15px;
+            margin: 0;
+            padding: 0;
+            flex-shrink: 0;
             accent-color: #0f0;
             cursor: pointer;
+        }
+
+        .debug-secrets-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .debug-secret-btn {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.35);
+            border-radius: 6px;
+            color: #0f0;
+            padding: 7px 12px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+            width: 100%;
+            text-align: center;
+        }
+
+        .debug-secret-btn:not(:disabled):hover {
+            background: rgba(0, 255, 0, 0.22);
+            border-color: rgba(0, 255, 0, 0.75);
+        }
+
+        .debug-secret-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
         }
 
         #debug-seek-modal .modal-actions {
@@ -1155,10 +1243,45 @@
                 display: none;
             }
         }
+
+        .track-card.is-next-track::before {
+            background: linear-gradient(180deg, rgba(158, 10, 23, 0.15), rgba(158, 10, 23, 0.85));
+        }
+
+        .track-card.is-next-track .track-icon-frame {
+            border-color: rgba(158, 10, 23, 0.45);
+        }
+
+        .track-card.is-next-track.active .track-icon-frame,
+        .track-card.is-next-track.is-active .track-icon-frame {
+            border-color: #9e0a17;
+            box-shadow:
+                0 0 25px rgba(158, 10, 23, 0.85),
+                0 0 55px rgba(158, 10, 23, 0.45);
+        }
+
+        .track-card.is-next-track.active .track-card-title,
+        .track-card.is-next-track.is-active .track-card-title {
+            text-shadow: 0 0 14px rgba(158, 10, 23, 0.85);
+        }
+
+        .track-card.is-next-track .track-load-label {
+            color: #ffb3ba;
+            text-shadow: 0 0 8px rgba(158, 10, 23, 0.9);
+        }
+
+        .track-card.is-next-track .track-load-bar {
+            border-color: rgba(158, 10, 23, 0.6);
+        }
+
+        .track-card.is-next-track .track-load-fill {
+            background: linear-gradient(90deg, #5c040c, #9e0a17, #e03a49);
+        }
     </style>
 </head>
 
 <body>
+    <input type="text" id="mini-console-input" autocomplete="off" spellcheck="false" aria-label="Консоль">
     <div id="error-toasts"></div>
     <div id="start-screen">
         <div id="start-text">Идет подгрузка интерфейса 0%</div>
@@ -1303,9 +1426,9 @@
     </div>
 
     <div id="debug-time-display">
-        <button id="debug-seek-back" class="debug-seek-btn" title="Назад 5 сек">-5</button>
+        <button type="button" id="debug-seek-back" class="debug-seek-btn" title="Назад 5 сек">-5</button>
         <span id="debug-time-text">0.000</span>
-        <button id="debug-seek-forward" class="debug-seek-btn" title="Вперед 5 сек">+5</button>
+        <button type="button" id="debug-seek-forward" class="debug-seek-btn" title="Вперед 5 сек">+5</button>
     </div>
     <div id="debug-seek-modal">
         <div class="modal-title">Перемотка (секунды)</div>
@@ -1314,10 +1437,14 @@
             <input type="checkbox" id="debug-subs-checkbox">
             <span>Отключить цитаты</span>
         </label>
+        <div class="debug-secrets-actions">
+            <button type="button" id="debug-show-secrets-btn" class="debug-secret-btn">Показать все секреты</button>
+            <button type="button" id="debug-hide-secrets-btn" class="debug-secret-btn">Скрыть все секреты</button>
+        </div>
         <div class="modal-hint">Enter — перемотать, Esc — закрыть</div>
         <div class="modal-actions">
-            <button class="cancel" id="debug-seek-cancel">Отмена</button>
-            <button id="debug-seek-apply">Перемотать</button>
+            <button type="button" class="cancel" id="debug-seek-cancel">Отмена</button>
+            <button type="button" id="debug-seek-apply">Перемотать</button>
         </div>
     </div>
 
@@ -1331,7 +1458,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script>
         let musicList = [];
-        const DEBUG_ENABLED = new URLSearchParams(location.search).has('debug');
+        let trackColumns = [];
+
+        const urlParams = new URLSearchParams(location.search);
+        let aalEnabled = urlParams.has('aal');
+        let lexEnabled = urlParams.has('lex');
+        let debugEnabled = urlParams.has('debug') || lexEnabled;
+        let debugShowAllNextTracks = aalEnabled || lexEnabled;
+
         const assetCache = new Map();
         const failedAssets = [];
         const MIME = {
@@ -1468,6 +1602,79 @@
             return blobUrl;
         }
 
+        function buildTrackHierarchy(rawList) {
+            trackColumns = rawList.map((mainTrack, col) => {
+                const columnNodes = [];
+                let cursor = mainTrack;
+                let row = 0;
+                const visited = new Set();
+
+                while (cursor && typeof cursor === 'object' && !visited.has(cursor)) {
+                    visited.add(cursor);
+                    columnNodes.push({
+                        track: cursor,
+                        col,
+                        row,
+                        isNextTrack: row > 0,
+                        unlocked: row === 0,
+                        cardRef: null
+                    });
+                    cursor = cursor.next_track || null;
+                    row++;
+                }
+
+                return columnNodes;
+            });
+        }
+
+        function getTrackNode(coord) {
+            if (!coord || !trackColumns.length) return null;
+            const colArr = trackColumns[coord.col];
+            if (!colArr) return null;
+            return colArr[coord.row] || null;
+        }
+
+        function isNodeVisibleInMenu(node) {
+            if (!node) return false;
+            return !node.isNextTrack || node.unlocked || aalEnabled || debugShowAllNextTracks;
+        }
+
+        function getVisibleRowsCount(col) {
+            const colArr = trackColumns[col];
+            if (!colArr) return 0;
+            let count = 0;
+            for (let r = 0; r < colArr.length; r++) {
+                if (isNodeVisibleInMenu(colArr[r])) count++;
+                else break;
+            }
+            return count;
+        }
+
+        function getNextPlaybackCoord(coord) {
+            const totalCols = trackColumns.length;
+            if (!totalCols || !coord) return { col: 0, row: 0 };
+            const colArr = trackColumns[coord.col] || [];
+            if (coord.row + 1 < colArr.length) {
+                return { col: coord.col, row: coord.row + 1 };
+            }
+            return { col: (coord.col + 1) % totalCols, row: 0 };
+        }
+
+        function getPrevPlaybackCoord(coord) {
+            const totalCols = trackColumns.length;
+            if (!totalCols || !coord) return { col: 0, row: 0 };
+            if (coord.row > 0) {
+                return { col: coord.col, row: coord.row - 1 };
+            }
+            const prevCol = (coord.col - 1 + totalCols) % totalCols;
+            const visibleCount = getVisibleRowsCount(prevCol);
+            return { col: prevCol, row: Math.max(0, visibleCount - 1) };
+        }
+
+        function isSameCoord(a, b) {
+            return Boolean(a && b && a.col === b.col && a.row === b.row);
+        }
+
         async function loadMusicConfig() {
             try {
                 const response = await fetch('music_config.json', { cache: 'no-cache' });
@@ -1480,10 +1687,12 @@
                     throw new Error('в music_config.json нет массива треков (ожидается [...] или {"tracks": [...]})');
                 }
                 musicList = list;
+                buildTrackHierarchy(musicList);
             } catch (err) {
                 console.error('[music_config] Ошибка загрузки music_config.json:', err);
                 showError('Не удалось загрузить music_config.json: ' + err.message);
                 musicList = [];
+                trackColumns = [];
             }
         }
 
@@ -1495,7 +1704,13 @@
             }
             const startText = document.getElementById('start-text');
             const uiImages = ['assets/icon.png', 'assets/background.png'];
-            const trackIcons = [...new Set(musicList.map(t => t.icon).filter(Boolean))];
+            const allIcons = [];
+            trackColumns.forEach(colArr => {
+                colArr.forEach(node => {
+                    if (node.track && node.track.icon) allIcons.push(node.track.icon);
+                });
+            });
+            const trackIcons = [...new Set(allIcons)];
 
             const jobs = [
                 (set) => document.fonts.load('16px Underdog').catch(() => { }).then(() => set(1)),
@@ -1519,6 +1734,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await loadMusicConfig();
 
+            const miniConsoleInput = document.getElementById('mini-console-input');
             const startScreen = document.getElementById('start-screen');
             const startText = document.getElementById('start-text');
             const trackSelectorScreen = document.getElementById('track-selector-screen');
@@ -1546,18 +1762,56 @@
             const currentTimeEl = document.getElementById('current-time');
             const totalDurationEl = document.getElementById('total-duration');
 
-            function updateNavTooltips(baseIndex = currentTrackIndex) {
-                const len = musicList.length;
-                if (!len) return;
-                const prevTrack = musicList[(baseIndex - 1 + len) % len];
-                const nextTrack = musicList[(baseIndex + 1) % len];
+            const debugTimeDisplay = document.getElementById('debug-time-display');
+            const debugSeekModal = document.getElementById('debug-seek-modal');
+            const debugSeekInput = document.getElementById('debug-seek-input');
+            const debugTimeText = document.getElementById('debug-time-text');
+            const debugShowSecretsBtn = document.getElementById('debug-show-secrets-btn');
+            const debugHideSecretsBtn = document.getElementById('debug-hide-secrets-btn');
 
-                prevTooltipTitle.textContent = prevTrack.title || 'Без названия';
-                prevTooltipArtist.textContent = prevTrack.artist || '';
-                nextTooltipTitle.textContent = nextTrack.title || 'Без названия';
-                nextTooltipArtist.textContent = nextTrack.artist || '';
+            let currentTrackCoord = { col: 0, row: 0 };
+            let targetCoord = { col: 0, row: 0 };
+
+            function updateDebugSecretsButtonsState() {
+                if (!debugShowSecretsBtn || !debugHideSecretsBtn) return;
+                const secretNodes = [];
+                trackColumns.forEach(colArr => {
+                    colArr.forEach(node => {
+                        if (node.isNextTrack) secretNodes.push(node);
+                    });
+                });
+
+                if (secretNodes.length === 0) {
+                    debugShowSecretsBtn.disabled = true;
+                    debugHideSecretsBtn.disabled = true;
+                    return;
+                }
+
+                const anyHidden = secretNodes.some(node => !isNodeVisibleInMenu(node));
+                const anyHideable = !aalEnabled && secretNodes.some(node => !node.unlocked && isNodeVisibleInMenu(node));
+
+                debugShowSecretsBtn.disabled = !anyHidden;
+                debugHideSecretsBtn.disabled = !anyHideable;
             }
-            updateNavTooltips(0);
+
+            function getCurrentTrack() {
+                const node = getTrackNode(currentTrackCoord);
+                return node ? node.track : null;
+            }
+
+            function updateNavTooltips(baseCoord = currentTrackCoord) {
+                if (!trackColumns.length) return;
+                const prevNode = getTrackNode(getPrevPlaybackCoord(baseCoord));
+                const nextNode = getTrackNode(getNextPlaybackCoord(baseCoord));
+                const prevTrack = prevNode ? prevNode.track : null;
+                const nextTrack = nextNode ? nextNode.track : null;
+
+                prevTooltipTitle.textContent = (prevTrack && prevTrack.title) || 'Без названия';
+                prevTooltipArtist.textContent = (prevTrack && prevTrack.artist) || '';
+                nextTooltipTitle.textContent = (nextTrack && nextTrack.title) || 'Без названия';
+                nextTooltipArtist.textContent = (nextTrack && nextTrack.artist) || '';
+            }
+            updateNavTooltips({ col: 0, row: 0 });
 
             function setPlayPauseIcon(paused) {
                 if (paused) {
@@ -1804,8 +2058,6 @@
             let nextAudio = audio2;
             let targetVolume = Number.isFinite(parseFloat(playerVolumeSlider.value)) ? parseFloat(playerVolumeSlider.value) : 0.3;
             let isCrossfading = false;
-            let currentTrackIndex = 0;
-            let targetIndex = 0;
             let hasPlayedAnyTrack = false;
             let loadToken = 0;
             let loadingTrack = false;
@@ -1859,7 +2111,7 @@
             trackSeekSlider.addEventListener('change', commitSeek);
             trackSeekSlider.addEventListener('pointerup', commitSeek);
 
-            let midpointPreloadTriggeredFor = null;
+            let midpointPreloadTriggeredForKey = null;
             let preloadToastHideTimer = null;
             let preloadGlowHideTimer = null;
             let preloadJobId = 0;
@@ -1920,15 +2172,19 @@
             }
 
             function checkMidpointPreload() {
-                if (!isPlaying || loadingTrack || musicList.length <= 1) return;
+                if (!isPlaying || loadingTrack || !trackColumns.length) return;
                 if (!activeAudio.duration || isNaN(activeAudio.duration)) return;
 
                 if (activeAudio.currentTime >= activeAudio.duration / 2) {
-                    const nextIdx = (currentTrackIndex + 1) % musicList.length;
-                    if (midpointPreloadTriggeredFor === nextIdx) return;
-                    midpointPreloadTriggeredFor = nextIdx;
+                    const nextCoord = getNextPlaybackCoord(currentTrackCoord);
+                    if (isSameCoord(nextCoord, currentTrackCoord)) return;
+                    const key = `${nextCoord.col}:${nextCoord.row}`;
+                    if (midpointPreloadTriggeredForKey === key) return;
+                    midpointPreloadTriggeredForKey = key;
 
-                    const nextTrack = musicList[nextIdx];
+                    const nextNode = getTrackNode(nextCoord);
+                    if (!nextNode) return;
+                    const nextTrack = nextNode.track;
                     const needed = [nextTrack.audio, nextTrack.bg].filter(Boolean);
                     if (!needed.length || needed.every(src => assetCache.has(src))) return;
 
@@ -1960,7 +2216,7 @@
                 });
             });
 
-            function getEffectiveTrackVolume(track = musicList[currentTrackIndex]) {
+            function getEffectiveTrackVolume(track = getCurrentTrack()) {
                 const multiplier = track ? parseMultiplier(track.sound_multiplier) : 1;
                 return clampVolume(targetVolume * multiplier);
             }
@@ -1971,92 +2227,135 @@
                 if (a.getAttribute('src')) reportAsset(a.dataset.orig || a.getAttribute('src'), 'ошибка воспроизведения');
             }));
 
-            let activeSelectorIndex = 0;
+            let activeSelectorCoord = { col: 0, row: 0 };
             let selectorOpen = false;
-            const trackCardRefs = [];
+            const columnElRefs = [];
+
+            function createTrackCardElement(node) {
+                const { track, col, row, isNextTrack } = node;
+                const card = document.createElement('div');
+                card.className = 'track-card';
+                if (isNextTrack) card.classList.add('is-next-track');
+                card.dataset.col = String(col);
+                card.dataset.row = String(row);
+
+                const loadBox = document.createElement('div');
+                loadBox.className = 'track-load-box';
+
+                const loadLabel = document.createElement('div');
+                loadLabel.className = 'track-load-label';
+                loadLabel.textContent = 'Загрузка 0%';
+
+                const loadBar = document.createElement('div');
+                loadBar.className = 'track-load-bar';
+
+                const loadFill = document.createElement('div');
+                loadFill.className = 'track-load-fill';
+
+                loadBar.appendChild(loadFill);
+                loadBox.append(loadLabel, loadBar);
+
+                const roundPct = parseRoundIcon(track.round_icon);
+                const iconFrame = document.createElement('div');
+                iconFrame.className = 'track-icon-frame';
+                iconFrame.style.borderRadius = `${roundPct}%`;
+
+                const img = document.createElement('img');
+                img.src = cached(track.icon || 'assets/icon.png');
+                img.alt = track.title || `Трек ${col + 1}`;
+                img.style.borderRadius = `${roundPct}%`;
+                img.onerror = () => {
+                    if (track.icon) reportAsset(track.icon, 'ошибка отображения иконки');
+                    img.onerror = null;
+                    img.src = cached('assets/icon.png');
+                };
+
+                const playBadge = document.createElement('div');
+                playBadge.className = 'track-play-badge';
+                playBadge.style.borderRadius = `${roundPct}%`;
+                playBadge.innerHTML = `
+                    <svg width="58" height="58" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+                        <circle cx="28" cy="28" r="25" fill="url(#player-icon-grad)" />
+                        <path d="M23 18.5C23 17.3 24.3 16.6 25.3 17.2L38.2 25.7C39.1 26.3 39.1 27.7 38.2 28.3L25.3 36.8C24.3 37.4 23 36.7 23 35.5V18.5Z" fill="#12091d" />
+                    </svg>
+                `;
+
+                iconFrame.append(img, playBadge);
+
+                const meta = document.createElement('div');
+                meta.className = 'track-card-meta';
+
+                const titleEl = document.createElement('div');
+                titleEl.className = 'track-card-title';
+                titleEl.textContent = track.title || 'Без названия';
+
+                const artistEl = document.createElement('div');
+                artistEl.className = 'track-card-artist';
+                artistEl.textContent = track.artist || '';
+
+                meta.append(titleEl, artistEl);
+                card.append(loadBox, iconFrame, meta);
+
+                card.addEventListener('click', () => {
+                    if (!selectorOpen) return;
+                    if (col !== activeSelectorCoord.col || row !== activeSelectorCoord.row) {
+                        setSelectorCoord({ col, row }, true);
+                    } else {
+                        handleActiveCardActivate({ col, row });
+                    }
+                });
+
+                node.cardRef = { card, loadBox, loadLabel, loadFill };
+                return card;
+            }
 
             function buildTrackCarousel() {
                 trackCarouselRail.innerHTML = '';
-                trackCardRefs.length = 0;
+                columnElRefs.length = 0;
 
-                musicList.forEach((track, idx) => {
-                    const card = document.createElement('div');
-                    card.className = 'track-card';
-                    card.dataset.index = String(idx);
+                trackColumns.forEach((colArr, col) => {
+                    const colEl = document.createElement('div');
+                    colEl.className = 'track-column';
+                    colEl.dataset.col = String(col);
 
-                    const loadBox = document.createElement('div');
-                    loadBox.className = 'track-load-box';
-
-                    const loadLabel = document.createElement('div');
-                    loadLabel.className = 'track-load-label';
-                    loadLabel.textContent = 'Загрузка 0%';
-
-                    const loadBar = document.createElement('div');
-                    loadBar.className = 'track-load-bar';
-
-                    const loadFill = document.createElement('div');
-                    loadFill.className = 'track-load-fill';
-
-                    loadBar.appendChild(loadFill);
-                    loadBox.append(loadLabel, loadBar);
-
-                    const roundPct = parseRoundIcon(track.round_icon);
-                    const iconFrame = document.createElement('div');
-                    iconFrame.className = 'track-icon-frame';
-                    iconFrame.style.borderRadius = `${roundPct}%`;
-
-                    const img = document.createElement('img');
-                    img.src = cached(track.icon || 'assets/icon.png');
-                    img.alt = track.title || `Трек ${idx + 1}`;
-                    img.style.borderRadius = `${roundPct}%`;
-                    img.onerror = () => {
-                        if (track.icon) reportAsset(track.icon, 'ошибка отображения иконки');
-                        img.onerror = null;
-                        img.src = cached('assets/icon.png');
-                    };
-
-                    const playBadge = document.createElement('div');
-                    playBadge.className = 'track-play-badge';
-                    playBadge.style.borderRadius = `${roundPct}%`;
-                    playBadge.innerHTML = `
-                        <svg width="58" height="58" viewBox="0 0 56 56" fill="none" aria-hidden="true">
-                            <circle cx="28" cy="28" r="25" fill="url(#player-icon-grad)" />
-                            <path d="M23 18.5C23 17.3 24.3 16.6 25.3 17.2L38.2 25.7C39.1 26.3 39.1 27.7 38.2 28.3L25.3 36.8C24.3 37.4 23 36.7 23 35.5V18.5Z" fill="#12091d" />
-                        </svg>
-                    `;
-
-                    iconFrame.append(img, playBadge);
-
-                    const meta = document.createElement('div');
-                    meta.className = 'track-card-meta';
-
-                    const titleEl = document.createElement('div');
-                    titleEl.className = 'track-card-title';
-                    titleEl.textContent = track.title || 'Без названия';
-
-                    const artistEl = document.createElement('div');
-                    artistEl.className = 'track-card-artist';
-                    artistEl.textContent = track.artist || '';
-
-                    meta.append(titleEl, artistEl);
-                    card.append(loadBox, iconFrame, meta);
-
-                    card.addEventListener('click', () => {
-                        if (!selectorOpen) return;
-                        if (idx !== activeSelectorIndex) {
-                            setSelectorIndex(idx, true);
-                        } else {
-                            handleActiveCardActivate(idx);
+                    colArr.forEach((node) => {
+                        const card = createTrackCardElement(node);
+                        if (!isNodeVisibleInMenu(node)) {
+                            card.classList.add('hidden');
                         }
+                        colEl.appendChild(card);
                     });
 
-                    trackCarouselRail.appendChild(card);
-                    trackCardRefs.push({ card, loadBox, loadLabel, loadFill });
+                    trackCarouselRail.appendChild(colEl);
+                    columnElRefs.push(colEl);
                 });
+
+                updateDebugSecretsButtonsState();
             }
 
-            function updateCardLoadProgress(index, ratio, statusText = null) {
-                const ref = trackCardRefs[index];
+            function syncCarouselVisibility() {
+                trackColumns.forEach((colArr) => {
+                    colArr.forEach((node) => {
+                        if (!node.cardRef) return;
+                        node.cardRef.card.classList.toggle('hidden', !isNodeVisibleInMenu(node));
+                    });
+                });
+
+                const maxRow = Math.max(0, getVisibleRowsCount(activeSelectorCoord.col) - 1);
+                if (activeSelectorCoord.row > maxRow) {
+                    activeSelectorCoord = { col: activeSelectorCoord.col, row: maxRow };
+                }
+
+                updateDebugSecretsButtonsState();
+
+                if (selectorOpen) {
+                    updateCarouselPosition(false);
+                }
+            }
+
+            function updateCardLoadProgress(coord, ratio, statusText = null) {
+                const node = getTrackNode(coord);
+                const ref = node && node.cardRef;
                 if (!ref) return;
                 const pct = Math.round(Math.min(1, Math.max(0, ratio)) * 100);
                 ref.card.classList.add('loading');
@@ -2065,8 +2364,9 @@
                 ref.loadLabel.textContent = statusText || `Загрузка ${pct}%`;
             }
 
-            function clearCardLoadProgress(index) {
-                const ref = trackCardRefs[index];
+            function clearCardLoadProgress(coord) {
+                const node = getTrackNode(coord);
+                const ref = node && node.cardRef;
                 if (!ref) return;
                 ref.card.classList.remove('loading');
                 ref.loadBox.classList.remove('visible');
@@ -2075,44 +2375,89 @@
             }
 
             function updateCarouselPosition(animate = true) {
-                if (!trackCardRefs.length) return;
-                trackCardRefs.forEach((ref, i) => {
-                    ref.card.classList.toggle('active', i === activeSelectorIndex);
-                    if (i !== activeSelectorIndex && !loadingTrack) {
-                        clearCardLoadProgress(i);
-                    }
+                if (!trackColumns.length || !columnElRefs.length) return;
+
+                const clampedCol = Math.max(0, Math.min(trackColumns.length - 1, activeSelectorCoord.col));
+                const maxVisibleRow = Math.max(0, getVisibleRowsCount(clampedCol) - 1);
+                const clampedRow = Math.max(0, Math.min(maxVisibleRow, activeSelectorCoord.row));
+                activeSelectorCoord = { col: clampedCol, row: clampedRow };
+
+                trackColumns.forEach((colArr, c) => {
+                    colArr.forEach((node, r) => {
+                        if (!node.cardRef) return;
+                        const isActive = (c === clampedCol && r === clampedRow);
+                        node.cardRef.card.classList.toggle('active', isActive);
+                        node.cardRef.card.classList.toggle('is-active', isActive);
+                        if (!isActive && !loadingTrack) {
+                            clearCardLoadProgress({ col: c, row: r });
+                        }
+                    });
                 });
 
-                const activeCard = trackCardRefs[activeSelectorIndex].card;
+                const activeColEl = columnElRefs[clampedCol];
+                const activeNode = getTrackNode(activeSelectorCoord);
+                const activeCard = activeNode && activeNode.cardRef ? activeNode.cardRef.card : null;
+                if (!activeColEl || !activeCard) return;
+
                 const viewportWidth = trackCarouselViewport.clientWidth || window.innerWidth;
-                const cardCenter = activeCard.offsetLeft + activeCard.offsetWidth / 2;
-                const offsetX = viewportWidth / 2 - cardCenter;
+                const viewportHeight = trackCarouselViewport.clientHeight || window.innerHeight;
+
+                const cardCenterX = activeColEl.offsetLeft + activeCard.offsetLeft + activeCard.offsetWidth / 2;
+                const cardCenterY = activeColEl.offsetTop + activeCard.offsetTop + activeCard.offsetHeight / 2;
+
+                const offsetX = viewportWidth / 2 - cardCenterX;
+                const offsetY = viewportHeight / 2 - cardCenterY;
 
                 trackCarouselRail.style.transition = animate
                     ? 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)'
                     : 'none';
-                trackCarouselRail.style.transform = `translateX(${offsetX}px)`;
+                trackCarouselRail.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
             }
 
-            function setSelectorIndex(newIndex, animate = true) {
-                if (!musicList.length) return;
-                const clamped = Math.max(0, Math.min(musicList.length - 1, newIndex));
-                if (clamped === activeSelectorIndex && animate) return;
+            function setSelectorCoord(newCoord, animate = true) {
+                if (!trackColumns.length) return;
+                const clampedCol = Math.max(0, Math.min(trackColumns.length - 1, newCoord.col));
+                const maxVisibleRow = Math.max(0, getVisibleRowsCount(clampedCol) - 1);
+                const clampedRow = Math.max(0, Math.min(maxVisibleRow, newCoord.row));
+
+                if (clampedCol === activeSelectorCoord.col && clampedRow === activeSelectorCoord.row && animate) {
+                    return;
+                }
 
                 if (loadingTrack) {
                     loadToken++;
                     loadingTrack = false;
-                    clearCardLoadProgress(activeSelectorIndex);
+                    clearCardLoadProgress(activeSelectorCoord);
                 }
 
-                activeSelectorIndex = clamped;
+                activeSelectorCoord = { col: clampedCol, row: clampedRow };
                 updateCarouselPosition(animate);
             }
 
-            function openTrackSelector(focusIndex = currentTrackIndex) {
-                if (!musicList.length) return;
+            function moveSelectorHorizontal(deltaCol) {
+                if (!trackColumns.length) return;
+                const nextCol = Math.max(0, Math.min(trackColumns.length - 1, activeSelectorCoord.col + deltaCol));
+                const maxVisibleRow = Math.max(0, getVisibleRowsCount(nextCol) - 1);
+                const nextRow = Math.min(activeSelectorCoord.row, maxVisibleRow);
+                setSelectorCoord({ col: nextCol, row: nextRow }, true);
+            }
+
+            function moveSelectorVertical(deltaRow) {
+                if (!trackColumns.length) return;
+                const maxVisibleRow = Math.max(0, getVisibleRowsCount(activeSelectorCoord.col) - 1);
+                const nextRow = Math.max(0, Math.min(maxVisibleRow, activeSelectorCoord.row + deltaRow));
+                setSelectorCoord({ col: activeSelectorCoord.col, row: nextRow }, true);
+            }
+
+            function openTrackSelector(focusCoord = currentTrackCoord) {
+                if (!trackColumns.length) return;
                 selectorOpen = true;
-                activeSelectorIndex = Math.max(0, Math.min(musicList.length - 1, focusIndex));
+                const clampedCol = Math.max(0, Math.min(trackColumns.length - 1, focusCoord.col));
+                const maxVisibleRow = Math.max(0, getVisibleRowsCount(clampedCol) - 1);
+                const clampedRow = Math.max(0, Math.min(maxVisibleRow, focusCoord.row));
+                activeSelectorCoord = { col: clampedCol, row: clampedRow };
+
+                syncCarouselVisibility();
                 updateSelectorBackgroundState();
                 trackSelectorScreen.classList.remove('selector-hidden');
                 musicPlayerPanel.classList.add('hidden');
@@ -2128,7 +2473,7 @@
             let wheelAccum = 0;
             let wheelResetTimer = null;
             trackSelectorScreen.addEventListener('wheel', (e) => {
-                if (!selectorOpen || !musicList.length) return;
+                if (!selectorOpen || !trackColumns.length) return;
                 e.preventDefault();
 
                 const delta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
@@ -2138,12 +2483,11 @@
                 wheelResetTimer = setTimeout(() => { wheelAccum = 0; }, 160);
 
                 const THRESHOLD = 45;
-                if (wheelAccum >= THRESHOLD) {
+                if (Math.abs(wheelAccum) >= THRESHOLD) {
+                    const step = wheelAccum > 0 ? 1 : -1;
                     wheelAccum = 0;
-                    setSelectorIndex(activeSelectorIndex + 1, true);
-                } else if (wheelAccum <= -THRESHOLD) {
-                    wheelAccum = 0;
-                    setSelectorIndex(activeSelectorIndex - 1, true);
+                    const nextCol = Math.max(0, Math.min(trackColumns.length - 1, activeSelectorCoord.col + step));
+                    setSelectorCoord({ col: nextCol, row: 0 }, true);
                 }
             }, { passive: false });
 
@@ -2152,13 +2496,13 @@
             });
 
             menuBtn.addEventListener('click', () => {
-                openTrackSelector(currentTrackIndex);
+                openTrackSelector(currentTrackCoord);
             });
 
-            async function handleActiveCardActivate(index) {
+            async function handleActiveCardActivate(coord) {
                 if (loadingTrack) return;
 
-                if (hasPlayedAnyTrack && currentTrackIndex === index && !isCrossfading) {
+                if (hasPlayedAnyTrack && isSameCoord(currentTrackCoord, coord) && !isCrossfading) {
                     closeTrackSelector();
                     if (activeAudio.paused) {
                         activeAudio.play().catch(() => { });
@@ -2171,8 +2515,10 @@
                     return;
                 }
 
-                const dir = index < currentTrackIndex ? 'prev' : 'next';
-                await switchToTrack(index, { fromSelector: true, direction: dir });
+                const dir = (coord.col < currentTrackCoord.col || (coord.col === currentTrackCoord.col && coord.row < currentTrackCoord.row))
+                    ? 'prev'
+                    : 'next';
+                await switchToTrack(coord, { fromSelector: true, direction: dir });
             }
 
             const subsTextEl = document.getElementById('subtitles-text');
@@ -2184,7 +2530,7 @@
             let subsEnabled = true;
 
             function getCurrentSubtitles() {
-                const track = musicList[currentTrackIndex];
+                const track = getCurrentTrack();
                 return track && track.subtitles ? track.subtitles : null;
             }
 
@@ -2383,8 +2729,9 @@
                 }, 350);
             }
 
-            function crossfadeToTrack(index, direction = 'next') {
-                if (!musicList.length) return;
+            function crossfadeToTrack(coord, direction = 'next') {
+                const node = getTrackNode(coord);
+                if (!node) return;
                 if (isCrossfading) {
                     gsap.killTweensOf([activeAudio, nextAudio]);
                     activeAudio.pause();
@@ -2397,15 +2744,21 @@
                 }
 
                 isCrossfading = true;
-                currentTrackIndex = index;
+                currentTrackCoord = { col: coord.col, row: coord.row };
                 hasPlayedAnyTrack = true;
-                midpointPreloadTriggeredFor = null;
-                const track = musicList[currentTrackIndex];
+                midpointPreloadTriggeredForKey = null;
+
+                if (node.isNextTrack && !node.unlocked) {
+                    node.unlocked = true;
+                    syncCarouselVisibility();
+                }
+
+                const track = node.track;
 
                 isPlaying = true;
                 setPauseState(false);
 
-                updateNavTooltips(currentTrackIndex);
+                updateNavTooltips(currentTrackCoord);
                 changeBackground(track.bg, direction, () => swapTrackInfo(track, direction));
 
                 stopSubsChecker();
@@ -2462,16 +2815,17 @@
                 }
             }
 
-            async function switchToTrack(index, { fromSelector = false, direction = 'next' } = {}) {
-                if (!musicList.length) return;
-                targetIndex = index;
+            async function switchToTrack(coord, { fromSelector = false, direction = 'next' } = {}) {
+                const node = getTrackNode(coord);
+                if (!node) return;
+                targetCoord = { col: coord.col, row: coord.row };
                 const myToken = ++loadToken;
                 loadingTrack = false;
                 hidePlayerLoadBar();
-                clearCardLoadProgress(index);
-                updateNavTooltips(index);
+                clearCardLoadProgress(coord);
+                updateNavTooltips(coord);
 
-                const track = musicList[index];
+                const track = node.track;
                 const needed = [track.audio, track.bg].filter(Boolean);
                 const missing = needed.filter(src => !assetCache.has(src));
 
@@ -2491,7 +2845,7 @@
                     const useCard = fromSelector || selectorOpen;
 
                     if (useCard) {
-                        updateCardLoadProgress(index, 0, 'Загрузка 0%');
+                        updateCardLoadProgress(coord, 0, 'Загрузка 0%');
                     } else {
                         showPlayerLoadBar(track);
                     }
@@ -2499,7 +2853,7 @@
                     await loadAssetsWithProgress(missing, (info) => {
                         if (myToken !== loadToken) return;
                         if (useCard) {
-                            updateCardLoadProgress(index, info.known ? info.ratio : 0);
+                            updateCardLoadProgress(coord, info.known ? info.ratio : 0);
                         } else {
                             setPlayerLoadBar(info);
                         }
@@ -2509,7 +2863,7 @@
 
                     loadingTrack = false;
                     if (useCard) {
-                        clearCardLoadProgress(index);
+                        clearCardLoadProgress(coord);
                     } else {
                         hidePlayerLoadBar();
                     }
@@ -2518,19 +2872,19 @@
                 if (selectorOpen) {
                     closeTrackSelector();
                 }
-                crossfadeToTrack(index, direction);
+                crossfadeToTrack(coord, direction);
             }
 
             function playNext() {
-                if (!musicList.length) return;
-                const base = loadingTrack ? targetIndex : currentTrackIndex;
-                switchToTrack((base + 1) % musicList.length, { direction: 'next' });
+                if (!trackColumns.length) return;
+                const base = loadingTrack ? targetCoord : currentTrackCoord;
+                switchToTrack(getNextPlaybackCoord(base), { direction: 'next' });
             }
 
             function playPrev() {
-                if (!musicList.length) return;
-                const base = loadingTrack ? targetIndex : currentTrackIndex;
-                switchToTrack((base - 1 + musicList.length) % musicList.length, { direction: 'prev' });
+                if (!trackColumns.length) return;
+                const base = loadingTrack ? targetCoord : currentTrackCoord;
+                switchToTrack(getPrevPlaybackCoord(base), { direction: 'prev' });
             }
 
             function handleAudioEnded(e) {
@@ -2544,6 +2898,18 @@
             playPauseBtn.addEventListener('click', togglePlayPause);
             nextBtn.addEventListener('click', playNext);
             prevBtn.addEventListener('click', playPrev);
+            document.querySelectorAll('.nav-btn-wrap').forEach((wrap) => {
+                const btn = wrap.querySelector('button');
+                if (btn) {
+                    btn.addEventListener('click', () => {
+                        wrap.classList.add('tooltip-suppressed');
+                        btn.blur();
+                    });
+                }
+                wrap.addEventListener('mouseleave', () => {
+                    wrap.classList.remove('tooltip-suppressed');
+                });
+            });
 
             playerVolumeSlider.addEventListener('input', (e) => {
                 targetVolume = parseFloat(e.target.value);
@@ -2582,8 +2948,8 @@
                 if (!initialAssetsLoaded) return;
                 clearTimeout(typeWriterInterval);
                 startScreen.classList.add('hidden');
-                if (musicList.length > 0) {
-                    openTrackSelector(0);
+                if (trackColumns.length > 0) {
+                    openTrackSelector({ col: 0, row: 0 });
                 } else {
                     musicPlayerPanel.classList.remove('hidden');
                     trackTitleEl.textContent = 'Треки не найдены';
@@ -2597,10 +2963,6 @@
                 handleStartScreenClick();
             });
 
-            const debugTimeDisplay = document.getElementById('debug-time-display');
-            const debugSeekModal = document.getElementById('debug-seek-modal');
-            const debugSeekInput = document.getElementById('debug-seek-input');
-            const debugTimeText = document.getElementById('debug-time-text');
             let debugTimeInterval = null;
             let debugVisible = false;
 
@@ -2631,6 +2993,7 @@
             function hideDebugTime() {
                 debugVisible = false;
                 debugTimeDisplay.style.display = 'none';
+                closeSeekModal();
                 if (debugTimeInterval) {
                     clearInterval(debugTimeInterval);
                     debugTimeInterval = null;
@@ -2645,6 +3008,7 @@
                 } else {
                     debugSeekInput.value = '0';
                 }
+                updateDebugSecretsButtonsState();
                 debugSeekModal.classList.add('open');
                 debugSeekInput.focus();
                 debugSeekInput.select();
@@ -2666,21 +3030,146 @@
                 closeSeekModal();
             }
 
+            debugShowSecretsBtn.addEventListener('click', () => {
+                if (debugShowSecretsBtn.disabled) return;
+                debugShowAllNextTracks = true;
+                syncCarouselVisibility();
+            });
+
+            debugHideSecretsBtn.addEventListener('click', () => {
+                if (debugHideSecretsBtn.disabled) return;
+                debugShowAllNextTracks = false;
+                syncCarouselVisibility();
+            });
+
+            function openMiniConsole() {
+                miniConsoleInput.value = '';
+                miniConsoleInput.classList.add('open');
+                miniConsoleInput.focus();
+            }
+
+            function closeMiniConsole() {
+                miniConsoleInput.classList.remove('open');
+                miniConsoleInput.blur();
+            }
+
+            function executeMiniConsoleCommand(rawValue) {
+                const tokens = rawValue
+                    .toLowerCase()
+                    .replace(/[?&]/g, ' ')
+                    .split(/\s+/)
+                    .filter(Boolean);
+
+                if (tokens.length === 0) {
+                    aalEnabled = false;
+                    lexEnabled = false;
+                    debugEnabled = false;
+                    debugShowAllNextTracks = false;
+                    hideDebugTime();
+                    syncCarouselVisibility();
+                    return;
+                }
+
+                tokens.forEach((cmd) => {
+                    if (cmd === 'debug') {
+                        debugEnabled = true;
+                        showDebugTime();
+                    } else if (cmd === 'aal') {
+                        aalEnabled = true;
+                        debugShowAllNextTracks = true;
+                        syncCarouselVisibility();
+                    } else if (cmd === 'lex') {
+                        lexEnabled = true;
+                        debugEnabled = true;
+                        debugShowAllNextTracks = true;
+                        showDebugTime();
+                        syncCarouselVisibility();
+                    }
+                });
+            }
+            miniConsoleInput.addEventListener('keydown', (e) => {
+                if (e.code === 'Backquote') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeMiniConsole();
+                    return;
+                }
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeMiniConsole();
+                    return;
+                }
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    executeMiniConsoleCommand(miniConsoleInput.value);
+                    closeMiniConsole();
+                }
+            });
+
             document.addEventListener('keydown', (e) => {
+                if (e.code === 'Backquote') {
+                    e.preventDefault();
+                    if (miniConsoleInput.classList.contains('open')) {
+                        closeMiniConsole();
+                    } else {
+                        openMiniConsole();
+                    }
+                    return;
+                }
+
+                if (miniConsoleInput.classList.contains('open')) {
+                    return;
+                }
+
+                if (debugEnabled && (e.code === 'F3' || (e.code === 'KeyD' && e.ctrlKey && e.shiftKey))) {
+                    e.preventDefault();
+                    if (debugVisible) {
+                        hideDebugTime();
+                    } else {
+                        showDebugTime();
+                    }
+                    return;
+                }
+
                 if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+                    if (e.key === 'Escape' && debugSeekModal.classList.contains('open')) {
+                        closeSeekModal();
+                    }
+                    if (e.key === 'Enter' && debugSeekModal.classList.contains('open')) {
+                        applySeek();
+                    }
+                    return;
+                }
+
+                if (e.key === 'Escape' && debugSeekModal.classList.contains('open')) {
+                    closeSeekModal();
+                    return;
+                }
+
+                if (e.key === 'Enter' && debugSeekModal.classList.contains('open')) {
+                    applySeek();
                     return;
                 }
 
                 if (selectorOpen && !debugSeekModal.classList.contains('open')) {
-                    if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+                    const key = e.key.toLowerCase();
+                    if (e.key === 'ArrowRight' || key === 'd' || key === 'в') {
                         e.preventDefault();
-                        setSelectorIndex(activeSelectorIndex + 1, true);
-                    } else if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+                        moveSelectorHorizontal(1);
+                    } else if (e.key === 'ArrowLeft' || key === 'a' || key === 'ф') {
                         e.preventDefault();
-                        setSelectorIndex(activeSelectorIndex - 1, true);
-                    } else if (e.key === ' ') {
+                        moveSelectorHorizontal(-1);
+                    } else if (e.key === 'ArrowDown' || key === 's' || key === 'ы') {
                         e.preventDefault();
-                        handleActiveCardActivate(activeSelectorIndex);
+                        moveSelectorVertical(1);
+                    } else if (e.key === 'ArrowUp' || key === 'w' || key === 'ц') {
+                        e.preventDefault();
+                        moveSelectorVertical(-1);
+                    } else if (e.key === ' ' || e.key === 'Enter') {
+                        e.preventDefault();
+                        handleActiveCardActivate(activeSelectorCoord);
                     } else if (e.key === 'Escape' && hasPlayedAnyTrack) {
                         e.preventDefault();
                         closeTrackSelector();
@@ -2692,24 +3181,12 @@
                     e.preventDefault();
                     togglePlayPause();
                 }
-
-                if (DEBUG_ENABLED && (e.code === 'F3' || (e.code === 'KeyD' && e.ctrlKey && e.shiftKey))) {
-                    e.preventDefault();
-                    if (debugVisible) {
-                        hideDebugTime();
-                    } else {
-                        showDebugTime();
-                    }
-                }
-                if (e.key === 'Escape' && debugSeekModal.classList.contains('open')) {
-                    closeSeekModal();
-                }
-                if (e.key === 'Enter' && debugSeekModal.classList.contains('open')) {
-                    applySeek();
-                }
             });
 
-            debugTimeText.addEventListener('click', openSeekModal);
+            debugTimeDisplay.addEventListener('click', (e) => {
+                if (e.target.closest('.debug-seek-btn')) return;
+                openSeekModal();
+            });
 
             document.getElementById('debug-seek-back').addEventListener('click', (e) => {
                 e.stopPropagation();
