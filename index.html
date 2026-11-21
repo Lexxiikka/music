@@ -53,13 +53,22 @@
             display: block;
         }
 
-        #creator-badge {
+        #creator-hud {
             position: fixed;
             top: 24px;
             left: 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            z-index: 35;
+            user-select: none;
+        }
+
+        #creator-badge {
+            position: relative;
             min-width: 18vw;
             min-height: 82px;
-            padding: 12px 50px 12px 14px;
+            padding: 12px 24px 12px 14px;
             background: rgba(0, 0, 0, 0.68);
             backdrop-filter: blur(10px);
             border: 2px solid #000000;
@@ -70,10 +79,47 @@
                 inset 0 0 12px rgba(0, 0, 0, 0.65);
             display: flex;
             align-items: center;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, padding 0.25s ease;
+        }
+
+        #creator-badge:not(.spoiler-active):hover {
+            box-shadow:
+                8px 8px 18px rgba(124, 0, 255, 0.9),
+                12px 12px 28px rgba(124, 0, 255, 0.45),
+                inset 0 0 12px rgba(0, 0, 0, 0.65);
+        }
+
+        #creator-badge.spoiler-active {
+            justify-content: center;
+            padding: 12px 28px;
+            transition: transform 0.25s ease, padding 0.25s ease;
+        }
+
+        .creator-normal-content {
+            display: flex;
+            align-items: center;
             gap: 14px;
-            z-index: 35;
-            user-select: none;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            width: 100%;
+            min-width: 0;
+            will-change: transform, opacity;
+        }
+
+        #creator-spoiler-text {
+            width: 100%;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            line-height: 1.3;
+            letter-spacing: 0.6px;
+            color: #ffffff;
+            text-shadow:
+                0 0 10px rgba(124, 0, 255, 0.8),
+                0 0 20px rgba(124, 0, 255, 0.5),
+                0 0 40px rgba(124, 0, 255, 0.3);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            will-change: transform, opacity;
         }
 
         #creator-avatar-link {
@@ -85,59 +131,6 @@
             text-decoration: none;
             cursor: pointer;
         }
-
-        #creator-top-text,
-        #creator-lower-text {
-            font-size: 13px;
-            line-height: 1.2;
-            color: rgba(255, 255, 255, 0.72);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-            will-change: transform, opacity;
-        }
-
-        #creator-name {
-            display: inline-block;
-            font-size: 20px;
-            font-weight: bold;
-            line-height: 1.25;
-            color: #ffffff;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-            transform-origin: left center;
-            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-            cursor: default;
-        }
-
-        #creator-site-link {
-            position: absolute;
-            right: 14px;
-            bottom: 6px;
-            width: 29px;
-            height: 29px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.75);
-            border: 1px solid #000000;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
-            transition: transform 0.2s ease, filter 0.2s ease;
-            overflow: hidden;
-        }
-
-        #creator-badge:hover {
-            box-shadow:
-                8px 8px 18px rgba(124, 0, 255, 0.9),
-                12px 12px 28px rgba(124, 0, 255, 0.45),
-                inset 0 0 12px rgba(0, 0, 0, 0.65);
-        }
-
 
         #creator-avatar-link.disabled {
             pointer-events: none;
@@ -168,6 +161,18 @@
             gap: 2px;
         }
 
+        #creator-top-text,
+        #creator-lower-text {
+            font-size: 13px;
+            line-height: 1.2;
+            color: rgba(255, 255, 255, 0.72);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            will-change: transform, opacity;
+        }
+
         #creator-top-text.is-clickable,
         #creator-lower-text.is-clickable {
             cursor: pointer;
@@ -184,7 +189,23 @@
             display: none;
         }
 
-        #creator-badge:hover #creator-name {
+        #creator-name {
+            display: inline-block;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1.25;
+            color: #ffffff;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            transform-origin: left center;
+            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: default;
+        }
+
+        #creator-badge:not(.spoiler-active):hover #creator-name {
             transform: scale(1.2);
             overflow: visible;
             background: linear-gradient(90deg, #7c00ff 0%, #d10003 50%, #7c00ff 100%);
@@ -207,9 +228,32 @@
             }
         }
 
+        #creator-site-link {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.68);
+            backdrop-filter: blur(10px);
+            border: 2px solid #000000;
+            box-shadow:
+                4px 4px 12px rgba(124, 0, 255, 0.75),
+                7px 7px 20px rgba(124, 0, 255, 0.35),
+                inset 0 0 8px rgba(0, 0, 0, 0.65);
+            transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+            overflow: hidden;
+        }
+
         #creator-site-link:hover {
-            transform: scale(1.14);
-            filter: brightness(1.15);
+            transform: scale(1.12);
+            box-shadow:
+                6px 6px 16px rgba(124, 0, 255, 0.9),
+                9px 9px 24px rgba(124, 0, 255, 0.45),
+                inset 0 0 8px rgba(0, 0, 0, 0.65);
+            filter: brightness(1.12);
         }
 
         #creator-site-link.disabled {
@@ -1455,15 +1499,20 @@
     <input type="text" id="mini-console-input" autocomplete="off" spellcheck="false" aria-label="Консоль">
     <div id="error-toasts"></div>
 
-    <div id="creator-badge" aria-label="Информация о создателе сайта">
-        <a id="creator-avatar-link" href="#" target="_blank" rel="noopener noreferrer" title="Сайт создателя"
-            aria-label="Сайт создателя">
-            <img id="creator-avatar" src="assets/creator.png" alt="Аватар создателя">
-        </a>
-        <div class="creator-text-block">
-            <div id="creator-top-text"></div>
-            <div id="creator-name"></div>
-            <div id="creator-lower-text"></div>
+    <div id="creator-hud" class="hidden">
+        <div id="creator-badge" aria-label="Информация о создателе сайта">
+            <div class="creator-normal-content" id="creator-normal-content">
+                <a id="creator-avatar-link" href="#" target="_blank" rel="noopener noreferrer" title="Сайт создателя"
+                    aria-label="Сайт создателя">
+                    <img id="creator-avatar" src="assets/creator.png" alt="Аватар создателя">
+                </a>
+                <div class="creator-text-block">
+                    <div id="creator-top-text"></div>
+                    <div id="creator-name"></div>
+                    <div id="creator-lower-text"></div>
+                </div>
+            </div>
+            <div id="creator-spoiler-text" class="hidden" aria-live="polite"></div>
         </div>
         <a id="creator-site-link" href="#" target="_blank" rel="noopener noreferrer" title="Сайт создателя"
             aria-label="Сайт создателя">
@@ -1630,13 +1679,14 @@
             <span>Отключить плашку создателя</span>
         </label>
         <div class="debug-secrets-actions">
+            <button type="button" id="debug-replay-spoiler-btn" class="debug-secret-btn">Повторить спойлер</button>
             <button type="button" id="debug-show-secrets-btn" class="debug-secret-btn">Показать все секреты</button>
             <button type="button" id="debug-hide-secrets-btn" class="debug-secret-btn">Скрыть все секреты</button>
         </div>
         <div class="modal-hint">Enter — перемотать, Esc — закрыть</div>
         <div class="modal-actions">
             <button type="button" class="cancel" id="debug-seek-cancel">Отмена</button>
-            <button type="button" class="cancel" id="debug-seek-apply">Перемотать</button>
+            <button type="button" id="debug-seek-apply">Перемотать</button>
         </div>
     </div>
 
@@ -1890,7 +1940,83 @@
             return pool[Math.floor(Math.random() * pool.length)];
         }
 
+        function getRandomRotationDelayMs() {
+            const seconds = Math.floor(Math.random() * 31) + 30;
+            return seconds * 1000;
+        }
+
+        function scheduleCreatorTextRotation(el) {
+            if (el._rotateTimer) {
+                clearTimeout(el._rotateTimer);
+                el._rotateTimer = null;
+            }
+            const items = el._textList || [];
+            if (new Set(items).size <= 1) return;
+
+            el._rotateTimer = setTimeout(() => {
+                el._rotateTimer = null;
+                rotateCreatorTextElement(el);
+            }, getRandomRotationDelayMs());
+        }
+
+        function rotateCreatorTextElement(el) {
+            const items = el._textList || [];
+            if (new Set(items).size <= 1 || el._isAnimating) return;
+
+            const nextText = pickRandomText(items, el.textContent);
+            if (nextText === el.textContent) {
+                scheduleCreatorTextRotation(el);
+                return;
+            }
+
+            if (el._rotateTimer) {
+                clearTimeout(el._rotateTimer);
+                el._rotateTimer = null;
+            }
+
+            const normalContent = document.getElementById('creator-normal-content');
+            const isHiddenBySpoiler = normalContent && normalContent.classList.contains('hidden');
+
+            if (isHiddenBySpoiler || typeof gsap === 'undefined') {
+                el.textContent = nextText;
+                el._isAnimating = false;
+                scheduleCreatorTextRotation(el);
+                return;
+            }
+
+            el._isAnimating = true;
+            gsap.killTweensOf(el);
+            gsap.to(el, {
+                opacity: 0,
+                y: -5,
+                duration: 0.18,
+                ease: 'power2.in',
+                onComplete: () => {
+                    el.textContent = nextText;
+                    gsap.fromTo(
+                        el,
+                        { opacity: 0, y: 5 },
+                        {
+                            opacity: 1,
+                            y: 0,
+                            duration: 0.24,
+                            ease: 'power2.out',
+                            onComplete: () => {
+                                el._isAnimating = false;
+                                scheduleCreatorTextRotation(el);
+                            }
+                        }
+                    );
+                }
+            });
+        }
+
         function setupRotatingCreatorText(el, rawValue) {
+            if (el._rotateTimer) {
+                clearTimeout(el._rotateTimer);
+                el._rotateTimer = null;
+            }
+
             const list = normalizeTextList(rawValue);
             el._textList = list;
             el._isAnimating = false;
@@ -1903,43 +2029,11 @@
                 el._boundClick = true;
                 el.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const items = el._textList || [];
-                    if (new Set(items).size <= 1 || el._isAnimating) return;
-
-                    const nextText = pickRandomText(items, el.textContent);
-                    if (nextText === el.textContent) return;
-
-                    el._isAnimating = true;
-                    if (typeof gsap !== 'undefined') {
-                        gsap.killTweensOf(el);
-                        gsap.to(el, {
-                            opacity: 0,
-                            y: -5,
-                            duration: 0.18,
-                            ease: 'power2.in',
-                            onComplete: () => {
-                                el.textContent = nextText;
-                                gsap.fromTo(
-                                    el,
-                                    { opacity: 0, y: 5 },
-                                    {
-                                        opacity: 1,
-                                        y: 0,
-                                        duration: 0.24,
-                                        ease: 'power2.out',
-                                        onComplete: () => {
-                                            el._isAnimating = false;
-                                        }
-                                    }
-                                );
-                            }
-                        });
-                    } else {
-                        el.textContent = nextText;
-                        el._isAnimating = false;
-                    }
+                    rotateCreatorTextElement(el);
                 });
             }
+
+            scheduleCreatorTextRotation(el);
         }
 
         function applyCreatorBadgeConfig(info) {
@@ -2046,9 +2140,12 @@
             await loadMusicConfig();
 
             const miniConsoleInput = document.getElementById('mini-console-input');
+            const creatorHud = document.getElementById('creator-hud');
             const creatorBadge = document.getElementById('creator-badge');
-            const creatorAvatarLink = document.getElementById('creator-avatar-link');
+            const creatorNormalContent = document.getElementById('creator-normal-content');
+            const creatorSpoilerTextEl = document.getElementById('creator-spoiler-text');
             const creatorAvatar = document.getElementById('creator-avatar');
+            const creatorSiteLink = document.getElementById('creator-site-link');
             const creatorSiteIcon = document.getElementById('creator-site-icon');
             const startScreen = document.getElementById('start-screen');
             const startText = document.getElementById('start-text');
@@ -2081,8 +2178,23 @@
             const debugSeekModal = document.getElementById('debug-seek-modal');
             const debugSeekInput = document.getElementById('debug-seek-input');
             const debugTimeText = document.getElementById('debug-time-text');
+            const debugReplaySpoilerBtn = document.getElementById('debug-replay-spoiler-btn');
             const debugShowSecretsBtn = document.getElementById('debug-show-secrets-btn');
             const debugHideSecretsBtn = document.getElementById('debug-hide-secrets-btn');
+
+            function syncSiteIconSize() {
+                const badgeHeight = creatorBadge.offsetHeight;
+                if (badgeHeight > 0) {
+                    const halfSize = Math.round(badgeHeight * 0.5);
+                    creatorSiteLink.style.width = `${halfSize}px`;
+                    creatorSiteLink.style.height = `${halfSize}px`;
+                }
+            }
+
+            if (typeof ResizeObserver !== 'undefined') {
+                const badgeResizeObserver = new ResizeObserver(() => syncSiteIconSize());
+                badgeResizeObserver.observe(creatorBadge);
+            }
 
             (function initAvatarShadowOrbit() {
                 const DEFAULT_ANGLE = Math.PI / 4;
@@ -2147,7 +2259,7 @@
                     }
                 }
 
-                creatorAvatarLink.addEventListener('mouseenter', () => {
+                creatorBadge.addEventListener('mouseenter', () => {
                     if (mode === 'fadingOut' || mode === 'fadingIn') {
                         angle = DEFAULT_ANGLE;
                     }
@@ -2155,7 +2267,7 @@
                     startLoop();
                 });
 
-                creatorAvatarLink.addEventListener('mouseleave', () => {
+                creatorBadge.addEventListener('mouseleave', () => {
                     if (mode === 'orbiting') {
                         mode = 'fadingOut';
                         startLoop();
@@ -2165,6 +2277,323 @@
 
             let currentTrackCoord = { col: 0, row: 0 };
             let targetCoord = { col: 0, row: 0 };
+
+            function getCurrentTrack() {
+                const node = getTrackNode(currentTrackCoord);
+                return node ? node.track : null;
+            }
+
+            const DEFAULT_BADGE_SHADOW = '6px 6px 14px rgba(124, 0, 255, 0.75), 10px 10px 24px rgba(124, 0, 255, 0.35), inset 0 0 12px rgba(0, 0, 0, 0.65)';
+            let spoilerState = {
+                active: false,
+                paused: false,
+                sessionId: 0,
+                items: [],
+                index: 0,
+                delayMs: 2000,
+                color: '#7c00ff',
+                timer: null,
+                stepStartedAt: 0,
+                remainingMs: 0
+            };
+
+            function hasTrackSpoiler(track) {
+                return Boolean(track && Array.isArray(track.spoiler) && track.spoiler.length > 0);
+            }
+
+            function updateDebugReplaySpoilerButtonState() {
+                if (!debugReplaySpoilerBtn) return;
+                const track = getCurrentTrack();
+                debugReplaySpoilerBtn.disabled = !hasPlayedAnyTrack || !hasTrackSpoiler(track);
+            }
+
+            function applySpoilerEntryStyle(entry) {
+                let displayText = '';
+                let glowColor = null;
+
+                if (typeof entry === 'object' && entry !== null) {
+                    displayText = entry.text !== undefined && entry.text !== null ? String(entry.text) : '';
+                    glowColor = entry.glow || null;
+                } else if (entry !== undefined && entry !== null) {
+                    displayText = String(entry);
+                }
+
+                creatorSpoilerTextEl.textContent = displayText;
+
+                if (typeof glowColor === 'string' && glowColor.trim().toLowerCase() === 'none') {
+                    creatorSpoilerTextEl.style.textShadow = 'none';
+                } else if (glowColor) {
+                    creatorSpoilerTextEl.style.textShadow = `
+                        0 0 10px ${glowColor},
+                        0 0 20px ${glowColor},
+                        0 0 40px ${glowColor},
+                        0 0 80px ${glowColor}
+                    `;
+                } else {
+                    creatorSpoilerTextEl.style.textShadow = '';
+                }
+            }
+
+            function clearSpoilerTimer() {
+                if (spoilerState.timer) {
+                    clearTimeout(spoilerState.timer);
+                    spoilerState.timer = null;
+                }
+            }
+
+            function scheduleSpoilerNextStep(sessionId, waitMs) {
+                clearSpoilerTimer();
+                spoilerState.stepStartedAt = performance.now();
+                spoilerState.remainingMs = waitMs;
+
+                spoilerState.timer = setTimeout(() => {
+                    if (!spoilerState.active || spoilerState.sessionId !== sessionId) return;
+                    advanceCreatorSpoiler(sessionId);
+                }, waitMs);
+            }
+
+            function pauseCreatorSpoiler() {
+                if (!spoilerState.active || spoilerState.paused) return;
+                spoilerState.paused = true;
+                if (spoilerState.timer) {
+                    const elapsed = performance.now() - spoilerState.stepStartedAt;
+                    spoilerState.remainingMs = Math.max(100, spoilerState.remainingMs - elapsed);
+                    clearSpoilerTimer();
+                }
+            }
+
+            function resumeCreatorSpoiler() {
+                if (!spoilerState.active || !spoilerState.paused) return;
+                spoilerState.paused = false;
+                scheduleSpoilerNextStep(spoilerState.sessionId, spoilerState.remainingMs || spoilerState.delayMs);
+            }
+
+            function advanceCreatorSpoiler(sessionId) {
+                if (!spoilerState.active || spoilerState.sessionId !== sessionId) return;
+
+                const nextIndex = spoilerState.index + 1;
+                if (nextIndex >= spoilerState.items.length) {
+                    finishCreatorSpoiler();
+                    return;
+                }
+
+                spoilerState.index = nextIndex;
+                const nextEntry = spoilerState.items[nextIndex];
+
+                if (typeof gsap !== 'undefined') {
+                    gsap.killTweensOf(creatorSpoilerTextEl);
+                    gsap.to(creatorSpoilerTextEl, {
+                        opacity: 0,
+                        y: -8,
+                        scale: 0.96,
+                        duration: 0.22,
+                        ease: 'power2.in',
+                        onComplete: () => {
+                            if (!spoilerState.active || spoilerState.sessionId !== sessionId) return;
+                            applySpoilerEntryStyle(nextEntry);
+                            gsap.fromTo(
+                                creatorSpoilerTextEl,
+                                { opacity: 0, y: 8, scale: 0.96 },
+                                {
+                                    opacity: 1,
+                                    y: 0,
+                                    scale: 1,
+                                    duration: 0.26,
+                                    ease: 'power2.out',
+                                    onComplete: () => {
+                                        if (!spoilerState.active || spoilerState.sessionId !== sessionId) return;
+                                        if (!spoilerState.paused) {
+                                            scheduleSpoilerNextStep(sessionId, spoilerState.delayMs);
+                                        }
+                                    }
+                                }
+                            );
+                        }
+                    });
+                } else {
+                    applySpoilerEntryStyle(nextEntry);
+                    if (!spoilerState.paused) {
+                        scheduleSpoilerNextStep(sessionId, spoilerState.delayMs);
+                    }
+                }
+            }
+            function regenerateCreatorRotatingTexts() {
+                const topEl = document.getElementById('creator-top-text');
+                const lowerEl = document.getElementById('creator-lower-text');
+
+                [topEl, lowerEl].forEach((el) => {
+                    if (!el) return;
+                    const items = el._textList || [];
+                    if (new Set(items).size > 1) {
+                        el.textContent = pickRandomText(items, el.textContent);
+                    }
+                    scheduleCreatorTextRotation(el);
+                });
+            }
+            function finishCreatorSpoiler(immediate = false) {
+                clearSpoilerTimer();
+                if (!spoilerState.active && creatorNormalContent.classList.contains('hidden') === false) {
+                    return;
+                }
+
+                const sessionId = ++spoilerState.sessionId;
+                spoilerState.active = false;
+                spoilerState.paused = false;
+                spoilerState.items = [];
+                spoilerState.index = 0;
+
+                if (immediate || typeof gsap === 'undefined') {
+                    gsap?.killTweensOf([creatorBadge, creatorNormalContent, creatorSpoilerTextEl]);
+                    creatorSpoilerTextEl.classList.add('hidden');
+                    creatorSpoilerTextEl.textContent = '';
+                    creatorSpoilerTextEl.style.textShadow = '';
+                    creatorBadge.classList.remove('spoiler-active');
+                    creatorBadge.style.boxShadow = '';
+                    creatorNormalContent.classList.remove('hidden');
+                    creatorNormalContent.style.opacity = '';
+                    creatorNormalContent.style.transform = '';
+                    syncSiteIconSize();
+                    return;
+                }
+
+                gsap.killTweensOf([creatorBadge, creatorNormalContent, creatorSpoilerTextEl]);
+
+                gsap.to(creatorBadge, {
+                    boxShadow: DEFAULT_BADGE_SHADOW,
+                    duration: 0.4,
+                    ease: 'power2.out',
+                    onComplete: () => {
+                        if (spoilerState.sessionId === sessionId && !spoilerState.active) {
+                            creatorBadge.style.boxShadow = '';
+                        }
+                    }
+                });
+
+                gsap.to(creatorSpoilerTextEl, {
+                    opacity: 0,
+                    y: -6,
+                    scale: 0.95,
+                    duration: 0.22,
+                    ease: 'power2.in',
+                    onComplete: () => {
+                        if (spoilerState.sessionId !== sessionId || spoilerState.active) return;
+                        creatorSpoilerTextEl.classList.add('hidden');
+                        creatorSpoilerTextEl.textContent = '';
+                        creatorSpoilerTextEl.style.textShadow = '';
+                        creatorBadge.classList.remove('spoiler-active');
+
+                        creatorNormalContent.classList.remove('hidden');
+                        syncSiteIconSize();
+                        gsap.fromTo(
+                            creatorNormalContent,
+                            { opacity: 0, scale: 0.94 },
+                            {
+                                opacity: 1,
+                                scale: 1,
+                                duration: 0.28,
+                                ease: 'power2.out',
+                                onComplete: () => {
+                                    if (spoilerState.sessionId === sessionId && !spoilerState.active) {
+                                        creatorNormalContent.style.opacity = '';
+                                        creatorNormalContent.style.transform = '';
+                                    }
+                                }
+                            }
+                        );
+                    }
+                })
+                regenerateCreatorRotatingTexts()
+            }
+
+            function startCreatorSpoiler(track) {
+                clearSpoilerTimer();
+                const sessionId = ++spoilerState.sessionId;
+
+                if (!hasTrackSpoiler(track)) {
+                    if (spoilerState.active) {
+                        finishCreatorSpoiler();
+                    }
+                    return;
+                }
+
+                const delaySec = Number(track.spoiler_delay);
+                const delayMs = (Number.isFinite(delaySec) && delaySec > 0 ? delaySec : 2) * 1000;
+                const color = typeof track.spoiler_color === 'string' && track.spoiler_color.trim()
+                    ? track.spoiler_color.trim()
+                    : '#7c00ff';
+
+                spoilerState.active = true;
+                spoilerState.paused = false;
+                spoilerState.items = track.spoiler.slice();
+                spoilerState.index = 0;
+                spoilerState.delayMs = delayMs;
+                spoilerState.color = color;
+
+                const bottomShadow = `0 8px 20px ${color}, 0 14px 34px ${color}, inset 0 0 12px rgba(0, 0, 0, 0.65)`;
+
+                if (typeof gsap === 'undefined') {
+                    creatorNormalContent.classList.add('hidden');
+                    creatorBadge.classList.add('spoiler-active');
+                    creatorBadge.style.boxShadow = bottomShadow;
+                    applySpoilerEntryStyle(spoilerState.items[0]);
+                    creatorSpoilerTextEl.classList.remove('hidden');
+                    scheduleSpoilerNextStep(sessionId, delayMs);
+                    return;
+                }
+
+                gsap.killTweensOf([creatorBadge, creatorNormalContent, creatorSpoilerTextEl]);
+
+                gsap.to(creatorBadge, {
+                    boxShadow: bottomShadow,
+                    duration: 0.35,
+                    ease: 'power2.out'
+                });
+
+                const revealFirstLine = () => {
+                    if (!spoilerState.active || spoilerState.sessionId !== sessionId) return;
+                    creatorNormalContent.classList.add('hidden');
+                    creatorBadge.classList.add('spoiler-active');
+                    applySpoilerEntryStyle(spoilerState.items[0]);
+                    creatorSpoilerTextEl.classList.remove('hidden');
+
+                    gsap.fromTo(
+                        creatorSpoilerTextEl,
+                        { opacity: 0, y: 10, scale: 0.94 },
+                        {
+                            opacity: 1,
+                            y: 0,
+                            scale: 1,
+                            duration: 0.3,
+                            ease: 'power2.out',
+                            onComplete: () => {
+                                if (!spoilerState.active || spoilerState.sessionId !== sessionId) return;
+                                if (!spoilerState.paused) {
+                                    scheduleSpoilerNextStep(sessionId, delayMs);
+                                }
+                            }
+                        }
+                    );
+                };
+
+                if (!creatorNormalContent.classList.contains('hidden')) {
+                    gsap.to(creatorNormalContent, {
+                        opacity: 0,
+                        scale: 0.93,
+                        duration: 0.22,
+                        ease: 'power2.in',
+                        onComplete: revealFirstLine
+                    });
+                } else {
+                    gsap.to(creatorSpoilerTextEl, {
+                        opacity: 0,
+                        y: -8,
+                        scale: 0.95,
+                        duration: 0.18,
+                        ease: 'power2.in',
+                        onComplete: revealFirstLine
+                    });
+                }
+            }
 
             function updateDebugSecretsButtonsState() {
                 if (!debugShowSecretsBtn || !debugHideSecretsBtn) return;
@@ -2186,11 +2615,6 @@
 
                 debugShowSecretsBtn.disabled = !anyHidden;
                 debugHideSecretsBtn.disabled = !anyHideable;
-            }
-
-            function getCurrentTrack() {
-                const node = getTrackNode(currentTrackCoord);
-                return node ? node.track : null;
             }
 
             function updateNavTooltips(baseCoord = currentTrackCoord) {
@@ -2725,6 +3149,7 @@
                 });
 
                 updateDebugSecretsButtonsState();
+                updateDebugReplaySpoilerButtonState();
             }
 
             function syncCarouselVisibility() {
@@ -2887,6 +3312,7 @@
 
             window.addEventListener('resize', () => {
                 if (selectorOpen) updateCarouselPosition(false);
+                syncSiteIconSize();
             });
 
             menuBtn.addEventListener('click', () => {
@@ -2905,6 +3331,7 @@
                         setPauseState(false);
                         updateSelectorBackgroundState();
                         startSubsChecker();
+                        resumeCreatorSpoiler();
                     }
                     return;
                 }
@@ -3054,6 +3481,9 @@
             function handleSeekReset(e) {
                 const audio = e.target;
                 if (audio !== activeAudio) return;
+                if (spoilerState.active) {
+                    finishCreatorSpoiler();
+                }
                 lastCheckTime = audio.currentTime - 0.5;
                 if (currentSubsKey !== null) {
                     subsTextEl.classList.remove('show');
@@ -3148,6 +3578,7 @@
                 }
 
                 const track = node.track;
+                updateDebugReplaySpoilerButtonState();
 
                 isPlaying = true;
                 setPauseState(false);
@@ -3156,6 +3587,7 @@
                 changeBackground(track.bg, direction, () => swapTrackInfo(track, direction));
 
                 stopSubsChecker();
+                startCreatorSpoiler(track);
 
                 nextAudio.dataset.orig = track.audio;
                 nextAudio.src = cached(track.audio);
@@ -3199,6 +3631,7 @@
                     setPauseState(false);
                     updateSelectorBackgroundState();
                     startSubsChecker();
+                    resumeCreatorSpoiler();
                 } else {
                     activeAudio.pause();
                     isPlaying = false;
@@ -3206,6 +3639,7 @@
                     setPauseState(true);
                     updateSelectorBackgroundState();
                     stopSubsChecker();
+                    pauseCreatorSpoiler();
                 }
             }
 
@@ -3233,6 +3667,7 @@
                         setPauseState(true);
                         updateSelectorBackgroundState();
                         stopSubsChecker();
+                        finishCreatorSpoiler();
                     }
 
                     loadingTrack = true;
@@ -3338,10 +3773,14 @@
             }
             runStartScreenEffect();
 
+            const debugCreatorCheckbox = document.getElementById('debug-creator-checkbox');
+
             function handleStartScreenClick() {
                 if (!initialAssetsLoaded) return;
                 clearTimeout(typeWriterInterval);
                 startScreen.classList.add('hidden');
+                creatorHud.classList.toggle('hidden', debugCreatorCheckbox.checked);
+                requestAnimationFrame(() => syncSiteIconSize());
                 if (trackColumns.length > 0) {
                     openTrackSelector({ col: 0, row: 0 });
                 } else {
@@ -3403,6 +3842,7 @@
                     debugSeekInput.value = '0';
                 }
                 updateDebugSecretsButtonsState();
+                updateDebugReplaySpoilerButtonState();
                 debugSeekModal.classList.add('open');
                 debugSeekInput.focus();
                 debugSeekInput.select();
@@ -3423,6 +3863,16 @@
                 }
                 closeSeekModal();
             }
+
+            debugReplaySpoilerBtn.addEventListener('click', () => {
+                if (debugReplaySpoilerBtn.disabled) return;
+                const track = getCurrentTrack();
+                if (!hasTrackSpoiler(track)) return;
+                startCreatorSpoiler(track);
+                if (!isPlaying || activeAudio.paused) {
+                    pauseCreatorSpoiler();
+                }
+            });
 
             debugShowSecretsBtn.addEventListener('click', () => {
                 if (debugShowSecretsBtn.disabled) return;
@@ -3610,8 +4060,9 @@
                 }
             });
 
-            document.getElementById('debug-creator-checkbox').addEventListener('change', (e) => {
-                creatorBadge.classList.toggle('hidden', e.target.checked);
+            debugCreatorCheckbox.addEventListener('change', (e) => {
+                if (!startScreen.classList.contains('hidden')) return;
+                creatorHud.classList.toggle('hidden', e.target.checked);
             });
 
             await preloadInitialAssets();
