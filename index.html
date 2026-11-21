@@ -1048,80 +1048,97 @@
             box-shadow: 0 0 6px rgba(255, 255, 255, 0.65);
         }
 
+        /* === ЕДИНАЯ ЛЕНТА СУБТИТРОВ === */
         #subtitles-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            height: calc(100% - 175px);
             z-index: 15;
             pointer-events: none;
-        }
-
-        #subtitles-text {
-            font-size: 40px;
-            color: #fff;
-            text-align: center;
-            max-width: 80%;
-            padding: 20px 15px;
-            text-shadow:
-                0 0 10px rgba(124, 0, 255, 0.8),
-                0 0 20px rgba(124, 0, 255, 0.5),
-                0 0 40px rgba(124, 0, 255, 0.3),
-                0 0 80px rgba(124, 0, 255, 0.1);
+            overflow: hidden;
             opacity: 0;
-            transform: scale(0.8) translateY(20px);
-            transition: none;
-            letter-spacing: 2px;
-            line-height: 1.6;
+            transition: opacity 0.45s ease;
+            -webkit-mask-image: linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(0, 0, 0, 0.35) 15%,
+                #000 32%,
+                #000 68%,
+                rgba(0, 0, 0, 0.35) 85%,
+                transparent 100%
+            );
+            mask-image: linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(0, 0, 0, 0.35) 15%,
+                #000 32%,
+                #000 68%,
+                rgba(0, 0, 0, 0.35) 85%,
+                transparent 100%
+            );
+        }
+
+        #subtitles-overlay.visible {
+            opacity: 1;
+        }
+
+        #subtitles-track {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: min(82%, 1100px);
+            transform: translate3d(-50%, 0, 0);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            will-change: transform;
+        }
+
+        .subtitle-line {
+            width: 100%;
+            text-align: center;
+            font-size: 36px;
             font-weight: bold;
-            background: rgba(0, 0, 0, 0.3);
+            line-height: 1.35;
+            letter-spacing: 1.5px;
+            padding: 8px 22px;
             border-radius: 15px;
+            color: rgba(255, 255, 255, 0.32);
+            transform: scale(0.84);
+            filter: blur(1px);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+            transition:
+                color 0.32s ease,
+                transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+                filter 0.32s ease,
+                text-shadow 0.32s ease,
+                background 0.32s ease;
+            will-change: transform, color, filter;
+        }
+
+        .subtitle-line.is-near {
+            color: rgba(255, 255, 255, 0.52);
+            transform: scale(0.9);
+            filter: blur(0.35px);
+        }
+
+        .subtitle-line.is-past {
+            color: rgba(255, 255, 255, 0.24);
+        }
+
+        .subtitle-line.is-active {
+            color: #ffffff;
+            transform: scale(1.06);
+            filter: blur(0px);
+            background: rgba(0, 0, 0, 0.28);
             backdrop-filter: blur(4px);
-            border: 1px solid rgba(124, 0, 255, 0.2);
-        }
-
-        #subtitles-text.show {
-            animation: subsFadeIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        #subtitles-text.hide {
-            animation: subsFadeOut 0.3s cubic-bezier(0.55, 0, 1, 0.45) forwards;
-        }
-
-        @keyframes subsFadeIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.8) translateY(20px);
-                filter: blur(10px);
-            }
-
-            60% {
-                filter: blur(0px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-                filter: blur(0px);
-            }
-        }
-
-        @keyframes subsFadeOut {
-            0% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-                filter: blur(0px);
-            }
-
-            100% {
-                opacity: 0;
-                transform: scale(1.1) translateY(-20px);
-                filter: blur(6px);
-            }
+            text-shadow: var(--active-glow,
+                0 0 10px rgba(124, 0, 255, 0.85),
+                0 0 22px rgba(124, 0, 255, 0.55),
+                0 0 44px rgba(124, 0, 255, 0.35)
+            );
         }
 
         .load-ring {
@@ -1693,7 +1710,7 @@
     </div>
 
     <div id="subtitles-overlay">
-        <div id="subtitles-text"></div>
+        <div id="subtitles-track"></div>
     </div>
 
     <audio id="music-player-1" preload="auto"></audio>
@@ -3316,6 +3333,9 @@
             window.addEventListener('resize', () => {
                 if (selectorOpen) updateCarouselPosition(false);
                 syncSiteIconSize();
+                if (parsedSubtitles.length && isPlaying) {
+                    renderSubtitlesFrame(true);
+                }
             });
 
             menuBtn.addEventListener('click', () => {
@@ -3345,139 +3365,246 @@
                 await switchToTrack(coord, { fromSelector: true, direction: dir });
             }
 
-            const subsTextEl = document.getElementById('subtitles-text');
-            const SUBS_DISPLAY_DURATION = 4;
-            let subsTimer = null;
-            let subsCheckInterval = null;
-            let currentSubsKey = null;
-            let lastCheckTime = 0;
+            /* === ЛОГИКА ЕДИНОЙ ЛЕНТЫ СУБТИТРОВ === */
+            const subsOverlayEl = document.getElementById('subtitles-overlay');
+            const subsTrackEl = document.getElementById('subtitles-track');
+            const SUBS_TAIL_DURATION = 4.5;
+            const SUBS_LEAD_IN = 2.5;
+
+            let subsRafId = null;
+            let parsedSubtitles = [];
+            let builtSubtitlesTrackRef = null;
+            let activeSubIndex = -1;
+            let currentTrackOffsetY = 0;
+            let hasInitialOffset = false;
             let subsEnabled = true;
 
-            function getCurrentSubtitles() {
-                const track = getCurrentTrack();
-                return track && track.subtitles ? track.subtitles : null;
-            }
-
-            function showSubsText(key, entry) {
-                currentSubsKey = key;
-
-                let displayText, glowColor;
-                if (typeof entry === 'object' && entry !== null && entry.text) {
-                    displayText = entry.text;
-                    glowColor = entry.glow || null;
-                } else {
-                    displayText = entry;
-                    glowColor = null;
-                }
-
-                subsTextEl.textContent = displayText;
-
+            function buildGlowValue(glowColor) {
                 if (typeof glowColor === 'string' && glowColor.trim().toLowerCase() === 'none') {
-                    subsTextEl.style.textShadow = 'none';
-                } else if (glowColor) {
-                    subsTextEl.style.textShadow = `
-                        0 0 10px ${glowColor},
-                        0 0 20px ${glowColor},
-                        0 0 40px ${glowColor},
-                        0 0 80px ${glowColor}
-                    `;
-                } else {
-                    subsTextEl.style.textShadow = '';
+                    return 'none';
                 }
-
-                subsTextEl.className = '';
-                void subsTextEl.offsetWidth;
-                subsTextEl.classList.add('show');
-
-                if (subsTimer) clearTimeout(subsTimer);
-                subsTimer = setTimeout(() => {
-                    subsTextEl.classList.remove('show');
-                    subsTextEl.classList.add('hide');
-                    currentSubsKey = null;
-                    setTimeout(() => {
-                        if (!subsTextEl.classList.contains('show')) {
-                            subsTextEl.className = '';
-                            subsTextEl.style.textShadow = '';
-                        }
-                    }, 300);
-                }, SUBS_DISPLAY_DURATION * 1000);
+                if (typeof glowColor === 'string' && glowColor.trim()) {
+                    const c = glowColor.trim();
+                    return `
+                        0 0 10px ${c},
+                        0 0 22px ${c},
+                        0 0 44px ${c},
+                        0 0 80px ${c}
+                    `;
+                }
+                return '';
             }
 
-            function checkSubsTime() {
-                if (!isPlaying || !subsEnabled) return;
+            function computeDynamicMarginTop(intervalSec) {
+                if (!Number.isFinite(intervalSec) || intervalSec <= 0) return 0;
+                const extra = Math.pow(Math.max(0, intervalSec - 0.8), 0.85) * 14;
+                return Math.round(16 + Math.min(130, extra));
+            }
 
-                const subtitles = getCurrentSubtitles();
-                if (!subtitles) {
-                    if (currentSubsKey !== null) {
-                        subsTextEl.classList.remove('show');
-                        subsTextEl.classList.add('hide');
-                        currentSubsKey = null;
-                        setTimeout(() => {
-                            if (!subsTextEl.classList.contains('show')) {
-                                subsTextEl.className = '';
-                                subsTextEl.style.textShadow = '';
-                            }
-                        }, 300);
+            function parseTrackSubtitles(track) {
+                const raw = track && track.subtitles;
+                if (!raw) return [];
+
+                const items = [];
+                if (Array.isArray(raw)) {
+                    raw.forEach((entry) => {
+                        if (!entry || typeof entry !== 'object') return;
+                        const t = parseFloat(entry.time ?? entry.t ?? entry.start);
+                        if (!Number.isFinite(t)) return;
+                        items.push({
+                            time: t,
+                            text: entry.text !== undefined && entry.text !== null ? String(entry.text) : '',
+                            glow: entry.glow || null
+                        });
+                    });
+                } else if (typeof raw === 'object') {
+                    for (const key in raw) {
+                        const t = parseFloat(key);
+                        if (!Number.isFinite(t)) continue;
+                        const entry = raw[key];
+                        if (typeof entry === 'object' && entry !== null) {
+                            items.push({
+                                time: t,
+                                text: entry.text !== undefined && entry.text !== null ? String(entry.text) : '',
+                                glow: entry.glow || null
+                            });
+                        } else if (entry !== undefined && entry !== null) {
+                            items.push({
+                                time: t,
+                                text: String(entry),
+                                glow: null
+                            });
+                        }
                     }
+                }
+
+                items.sort((a, b) => a.time - b.time);
+                return items;
+            }
+
+            function buildSubtitlesDOM(track) {
+                if (builtSubtitlesTrackRef === track && parsedSubtitles.length > 0) {
+                    return;
+                }
+
+                builtSubtitlesTrackRef = track;
+                subsTrackEl.innerHTML = '';
+                parsedSubtitles = [];
+                activeSubIndex = -1;
+                hasInitialOffset = false;
+
+                const items = parseTrackSubtitles(track);
+                if (!items.length) {
+                    subsOverlayEl.classList.remove('visible');
+                    return;
+                }
+
+                items.forEach((item, idx) => {
+                    const lineEl = document.createElement('div');
+                    lineEl.className = 'subtitle-line';
+                    lineEl.textContent = item.text;
+
+                    const glowVal = buildGlowValue(item.glow);
+                    if (glowVal) {
+                        lineEl.style.setProperty('--active-glow', glowVal);
+                    }
+
+                    if (idx > 0) {
+                        const dt = item.time - items[idx - 1].time;
+                        lineEl.style.marginTop = `${computeDynamicMarginTop(dt)}px`;
+                    }
+
+                    subsTrackEl.appendChild(lineEl);
+                    parsedSubtitles.push({
+                        time: item.time,
+                        text: item.text,
+                        glow: item.glow,
+                        el: lineEl
+                    });
+                });
+            }
+
+            function findSubtitleIndexAtTime(t) {
+                let lo = 0;
+                let hi = parsedSubtitles.length - 1;
+                let ans = -1;
+                while (lo <= hi) {
+                    const mid = (lo + hi) >> 1;
+                    if (parsedSubtitles[mid].time <= t + 0.001) {
+                        ans = mid;
+                        lo = mid + 1;
+                    } else {
+                        hi = mid - 1;
+                    }
+                }
+                return ans;
+            }
+
+            function updateActiveSubtitleClasses(newIdx) {
+                if (newIdx === activeSubIndex) return;
+                activeSubIndex = newIdx;
+
+                for (let i = 0; i < parsedSubtitles.length; i++) {
+                    const el = parsedSubtitles[i].el;
+                    const isActive = (newIdx >= 0 && i === newIdx);
+                    const isNear = (newIdx >= 0 && Math.abs(i - newIdx) === 1);
+                    const isPast = (newIdx >= 0 && i < newIdx);
+
+                    el.classList.toggle('is-active', isActive);
+                    el.classList.toggle('is-near', isNear);
+                    el.classList.toggle('is-past', isPast);
+                }
+            }
+
+            function getLineCenterY(idx) {
+                const el = parsedSubtitles[idx].el;
+                return el.offsetTop + el.offsetHeight / 2;
+            }
+
+            function renderSubtitlesFrame(instant = false) {
+                if (!subsEnabled || !parsedSubtitles.length) {
+                    subsOverlayEl.classList.remove('visible');
                     return;
                 }
 
                 const currentTime = activeAudio.currentTime;
+                const firstTime = parsedSubtitles[0].time;
+                const lastTime = parsedSubtitles[parsedSubtitles.length - 1].time;
 
-                if (currentTime < lastCheckTime - 0.05) {
-                    lastCheckTime = currentTime;
-                    return;
+                const isWithinWindow =
+                    currentTime >= firstTime - SUBS_LEAD_IN &&
+                    currentTime <= lastTime + SUBS_TAIL_DURATION;
+
+                subsOverlayEl.classList.toggle('visible', isWithinWindow);
+
+                const idx = findSubtitleIndexAtTime(currentTime);
+                updateActiveSubtitleClasses(idx);
+
+                const overlayHeight = subsOverlayEl.clientHeight || (window.innerHeight - 175);
+                const centerAnchor = overlayHeight * 0.5;
+                let targetLineCenterY = 0;
+
+                if (idx < 0) {
+                    const firstCenter = getLineCenterY(0);
+                    const leadProgress = Math.max(0, Math.min(1, (currentTime - (firstTime - SUBS_LEAD_IN)) / SUBS_LEAD_IN));
+                    const easedLead = 1 - Math.pow(1 - leadProgress, 2);
+                    targetLineCenterY = firstCenter + (1 - easedLead) * 90;
+                } else if (idx >= parsedSubtitles.length - 1) {
+                    targetLineCenterY = getLineCenterY(parsedSubtitles.length - 1);
+                } else {
+                    const curr = parsedSubtitles[idx];
+                    const next = parsedSubtitles[idx + 1];
+                    const y0 = getLineCenterY(idx);
+                    const y1 = getLineCenterY(idx + 1);
+                    const dt = Math.max(0.05, next.time - curr.time);
+                    const rawProgress = Math.max(0, Math.min(1, (currentTime - curr.time) / dt));
+                    // Гибридная кривая: скорость прямо зависит от интервала dt, но активная строка чуть задерживается в центре
+                    const smoothstep = rawProgress * rawProgress * (3 - 2 * rawProgress);
+                    const blendedProgress = 0.35 * rawProgress + 0.65 * smoothstep;
+                    targetLineCenterY = y0 + (y1 - y0) * blendedProgress;
                 }
 
-                let latestKey = null;
-                let latestTime = -Infinity;
+                const desiredOffsetY = centerAnchor - targetLineCenterY;
 
-                for (const key in subtitles) {
-                    const t = parseFloat(key);
-                    if (isNaN(t)) continue;
-                    if (t > lastCheckTime && t <= currentTime + 0.001) {
-                        if (t > latestTime) {
-                            latestTime = t;
-                            latestKey = key;
-                        }
+                if (instant || !hasInitialOffset) {
+                    currentTrackOffsetY = desiredOffsetY;
+                    hasInitialOffset = true;
+                } else {
+                    currentTrackOffsetY += (desiredOffsetY - currentTrackOffsetY) * 0.24;
+                    if (Math.abs(desiredOffsetY - currentTrackOffsetY) < 0.15) {
+                        currentTrackOffsetY = desiredOffsetY;
                     }
                 }
 
-                lastCheckTime = currentTime;
+                subsTrackEl.style.transform = `translate3d(-50%, ${currentTrackOffsetY.toFixed(2)}px, 0)`;
+            }
 
-                if (latestKey && currentSubsKey !== latestKey) {
-                    showSubsText(latestKey, subtitles[latestKey]);
+            function subsAnimationLoop() {
+                if (!isPlaying || !subsEnabled) {
+                    subsRafId = null;
+                    return;
                 }
+                renderSubtitlesFrame(false);
+                subsRafId = requestAnimationFrame(subsAnimationLoop);
             }
 
             function startSubsChecker() {
-                stopSubsChecker();
-                lastCheckTime = activeAudio.currentTime;
-                subsCheckInterval = setInterval(checkSubsTime, 100);
+                stopSubsChecker(false);
+                if (!subsEnabled) return;
+                const track = getCurrentTrack();
+                buildSubtitlesDOM(track);
+                if (!parsedSubtitles.length) return;
+                renderSubtitlesFrame(true);
+                subsRafId = requestAnimationFrame(subsAnimationLoop);
             }
 
-            function stopSubsChecker() {
-                if (subsCheckInterval) {
-                    clearInterval(subsCheckInterval);
-                    subsCheckInterval = null;
+            function stopSubsChecker(hideOverlay = true) {
+                if (subsRafId !== null) {
+                    cancelAnimationFrame(subsRafId);
+                    subsRafId = null;
                 }
-                if (subsTimer) {
-                    clearTimeout(subsTimer);
-                    subsTimer = null;
-                }
-                currentSubsKey = null;
-                if (subsTextEl.classList.contains('show')) {
-                    subsTextEl.classList.remove('show');
-                    subsTextEl.classList.add('hide');
-                    setTimeout(() => {
-                        if (!subsTextEl.classList.contains('show')) {
-                            subsTextEl.className = '';
-                            subsTextEl.style.textShadow = '';
-                        }
-                    }, 300);
-                } else {
-                    subsTextEl.className = '';
-                    subsTextEl.style.textShadow = '';
+                if (hideOverlay) {
+                    subsOverlayEl.classList.remove('visible');
                 }
             }
 
@@ -3487,17 +3614,8 @@
                 if (spoilerState.active) {
                     finishCreatorSpoiler();
                 }
-                lastCheckTime = audio.currentTime - 0.5;
-                if (currentSubsKey !== null) {
-                    subsTextEl.classList.remove('show');
-                    subsTextEl.classList.add('hide');
-                    currentSubsKey = null;
-                    setTimeout(() => {
-                        if (!subsTextEl.classList.contains('show')) {
-                            subsTextEl.className = '';
-                            subsTextEl.style.textShadow = '';
-                        }
-                    }, 300);
+                if (subsEnabled && parsedSubtitles.length) {
+                    renderSubtitlesFrame(true);
                 }
             }
             audio1.addEventListener('seeking', handleSeekReset);
@@ -3589,7 +3707,7 @@
                 updateNavTooltips(currentTrackCoord);
                 changeBackground(track.bg, direction, () => swapTrackInfo(track, direction));
 
-                stopSubsChecker();
+                stopSubsChecker(true);
                 startCreatorSpoiler(track);
 
                 nextAudio.dataset.orig = track.audio;
@@ -3641,7 +3759,7 @@
                     setPlayPauseIcon(true);
                     setPauseState(true);
                     updateSelectorBackgroundState();
-                    stopSubsChecker();
+                    stopSubsChecker(false);
                     pauseCreatorSpoiler();
                 }
             }
@@ -3669,7 +3787,7 @@
                         setPlayPauseIcon(true);
                         setPauseState(true);
                         updateSelectorBackgroundState();
-                        stopSubsChecker();
+                        stopSubsChecker(true);
                         finishCreatorSpoiler();
                     }
 
@@ -4057,7 +4175,7 @@
             document.getElementById('debug-subs-checkbox').addEventListener('change', (e) => {
                 subsEnabled = !e.target.checked;
                 if (!subsEnabled) {
-                    stopSubsChecker();
+                    stopSubsChecker(true);
                 } else if (isPlaying) {
                     startSubsChecker();
                 }
