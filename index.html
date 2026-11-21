@@ -2316,11 +2316,29 @@
                 return Boolean(track && Array.isArray(track.spoiler) && track.spoiler.length > 0);
             }
 
+            function canReplayCurrentSpoiler() {
+                const track = getCurrentTrack();
+                return Boolean(hasPlayedAnyTrack && isPlaying && !activeAudio.paused && hasTrackSpoiler(track));
+            }
+
+            function syncCreatorBadgeReplayState() {
+                creatorBadge.classList.toggle('can-replay-spoiler', canReplayCurrentSpoiler());
+            }
+
             function updateDebugReplaySpoilerButtonState() {
                 if (!debugReplaySpoilerBtn) return;
                 const track = getCurrentTrack();
                 debugReplaySpoilerBtn.disabled = !hasPlayedAnyTrack || !hasTrackSpoiler(track);
+                syncCreatorBadgeReplayState();
             }
+
+            creatorBadge.addEventListener('click', (e) => {
+                if (e.target.closest('a')) return;
+                if (!canReplayCurrentSpoiler()) return;
+                const track = getCurrentTrack();
+                if (!hasTrackSpoiler(track)) return;
+                startCreatorSpoiler(track);
+            });
 
             function applySpoilerEntryStyle(entry) {
                 let displayText = '';
@@ -2868,6 +2886,7 @@
             function updateSelectorBackgroundState() {
                 const showIdleBg = !hasPlayedAnyTrack || !isPlaying || activeAudio.paused;
                 trackSelectorScreen.classList.toggle('has-idle-bg', showIdleBg);
+                syncCreatorBadgeReplayState();
             }
 
             function formatTrackTime(seconds) {
