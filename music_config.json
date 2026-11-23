@@ -28,7 +28,7 @@
     "bg": "sounds/background__Павел_Пламенев__Разговор.mp4",
     "icon": "sounds/icon__Павел_Пламенев__Разговор.png",
     "round_icon": 30,
-    "sound_multiplier": 0.8,
+    "sound_multiplier": 0.2,
     "spoiler": [
       { "text": "Посвящается...", "glow": "#310e44" },
       { "text": "Лорному времени", "glow": "#310e44" },
@@ -127,7 +127,7 @@
     "bg": "sounds/background__DEEP-EX-SENSE__Хомо_Саспенс.mp4",
     "icon": "sounds/icon__DEEP-EX-SENSE__Хомо_Саспенс.png",
     "round_icon": 30,
-    "sound_multiplier": 0.7,
+    "sound_multiplier": 0.2,
     "subtitles": {
       "8.72": { "text": "Мы убиваем ради забавы", "glow": "#B22222" },
       "10.06": {
@@ -416,7 +416,7 @@
       "bg": "sounds/background__DEEP-EX-SENSE__I.mp4",
       "icon": "sounds/icon__DEEP-EX-SENSE__I.png",
       "round_icon": 30,
-      "sound_multiplier": 0.7,
+      "sound_multiplier": 0.2,
       "subtitles": {
         "9.5": { "text": "Вечно один", "glow": "#1E90FF" },
         "10.6": { "text": "Вечно один", "glow": "#1E90FF" },
@@ -614,7 +614,7 @@
     "bg": "sounds/background__Наше_Последнее_Лето__Скелет.mp4",
     "icon": "sounds/icon__Наше_Последнее_Лето__Скелет.png",
     "round_icon": 30,
-    "sound_multiplier": 0.6,
+    "sound_multiplier": 0.2,
     "subtitles": {
       "7.6": { "text": "Жизненная ноша", "glow": "#d48676" },
       "9.5": { "text": "Груз тяжёлый за плечами", "glow": "#d48676" },
@@ -673,7 +673,7 @@
       "bg": "sounds/background__Наше_последнее_лето__Я_устал.mp4",
       "icon": "sounds/icon__Наше_последнее_лето__Я_устал.png",
       "round_icon": 30,
-      "sound_multiplier": 0.5,
+      "sound_multiplier": 0.2,
       "spoiler": [
         { "text": "Это чистый вайб,", "glow": "#7a4f87" },
         { "text": "Новой эры,,", "glow": "#7a4f87" },
@@ -808,7 +808,7 @@
     "bg": "sounds/background__Стинт__Друзья.mp4",
     "icon": "sounds/icon__Стинт__Друзья.png",
     "round_icon": 30,
-    "sound_multiplier": 0.7,
+    "sound_multiplier": 0.2,
     "spoiler": [
       { "text": "Общая роль на AAL", "glow": "#be4cfe" },
       { "text": "Сборщите тварей", "glow": "#14ff00" },
@@ -899,7 +899,7 @@
     "bg": "sounds/background__Ошибся_номером__Шагает_дождь.mp4",
     "icon": "sounds/icon__Ошибся_номером__Шагает_дождь.png",
     "round_icon": 30,
-    "sound_multiplier": 1,
+    "sound_multiplier": 0.2,
     "spoiler": [
       { "text": "Посвящается новой эре", "glow": "#5783fe" },
       { "text": "Моральной помощи", "glow": "#5783fe" }
@@ -1012,7 +1012,7 @@
       "bg": "sounds/background__Наше_Последнее_Лето__Незнакомы.mp4",
       "icon": "sounds/icon__Наше_Последнее_Лето__Незнакомы.png",
       "round_icon": 30,
-      "sound_multiplier": 1,
+      "sound_multiplier": 0.2,
       "spoiler": [
         { "text": "Посвящается старым друзьям,", "glow": "#68327f" },
         { "text": "Что сейчас пали в небытье..", "glow": "#68327f" },
@@ -1143,7 +1143,7 @@
     "bg": "sounds/background__AnimeLamp__Класс_Превосходства.mp4",
     "icon": "sounds/icon__AnimeLamp__Класс_Превосходства.png",
     "round_icon": 30,
-    "sound_multiplier": 0.6,
+    "sound_multiplier": 0.2,
     "subtitles": {
       "4.84": { "text": "Пеленой скрыты мотивы....", "glow": "#9b2709" },
       "7.67": {
@@ -1293,7 +1293,7 @@
     "bg": "sounds/background__Творец.mp4",
     "icon": "sounds/icon__Творец.png",
     "round_icon": 30,
-    "sound_multiplier": 0.8,
+    "sound_multiplier": 0.2,
     "spoiler": [
       { "text": "Посвящается тому,", "glow": "#282c55" },
       { "text": "Как Алон искал", "glow": "#bd2628" },
